@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "DEDZED Documentation",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -11,58 +11,43 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
             "group": "Getting started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "getting-started/before-you-begin",
+              "getting-started/self-registration",
+              "getting-started/deploying-cluster",
+              "getting-started/provision-time",
+              "getting-started/local-install"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Kasm Workspaces",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "kasm-workspaces/working-within-kasm",
+              "kasm-workspaces/connect-cluster",
+              "kasm-workspaces/install-software"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Knowledge base",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "knowledge-base/what-is-dedzed",
+              "knowledge-base/ephemeral-environments",
+              "knowledge-base/k9s-cheat-sheet",
+              "knowledge-base/python-development",
+              "knowledge-base/ask-pablo"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Support",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "support/contact",
+              "support/terms-and-conditions",
+              "support/privacy-policy"
             ]
           }
         ]
@@ -71,14 +56,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "DEDZED Platform",
+          "href": "https://dedzed.blacklabel.mil",
+          "icon": "rocket"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Kasm VDI",
+          "href": "https://kasm.dedzed.blacklabel.mil",
+          "icon": "desktop"
         }
       ]
     }
@@ -91,32 +76,30 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:dedzed-tech@shebash.io"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Launch DEDZED",
+      "href": "https://dedzed.blacklabel.mil"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/shebashio"
     }
   }
 }

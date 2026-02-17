@@ -1,0 +1,49 @@
+---
+title: "Time required to provision a cluster"
+description: "Understanding cluster provisioning times and how to plan your workflow"
+---
+
+<Note>
+### How long does it take to provision a cluster in DEDZED?
+</Note>
+
+Provisioning a cluster in DEDZED can take 10-15 minutes. This includes setting up all necessary infrastructure from scratch, including an isolated VPC, subnets, the cluster itself, node groups, and installing Helm charts for Big Bang.
+
+<Note>
+### Why does it take so long to provision a cluster?
+</Note>
+
+The process involves creating a full network and compute environment, using Terraform to handle infrastructure setup. When you initiate a cluster, Terraform provisions resources on demand, beginning from a baseline (net-zero) state up to a fully configured network and cluster infrastructure.
+
+<Note>
+### What resources and components are provisioned during the process?
+</Note>
+
+During provisioning, DEDZED configures:
+
+- **Virtual Private Cloud (VPC)**: An isolated environment for your resources
+- **Subnets**: Segmented network spaces within the VPC
+- **Clusters and Node Groups**: Compute resources for deploying and running applications
+- **Helm Chart for Big Bang**: A Helm package to streamline installation of Big Bang services and dependencies
+
+<Note>
+### Can I speed up the provisioning time?
+</Note>
+
+Currently, the 10-15 minute time frame is typical for provisioning a new cluster. This process includes multiple infrastructure elements and is essential for securing and configuring your cluster. However, by planning for this time during development, you can reduce idle time in your workflow.
+
+<Note>
+### Will knowing this information in advance be helpful for development teams?
+</Note>
+
+Yes, understanding the 15-minute provisioning time is beneficial for development planning, particularly if teams intend to integrate DEDZED clusters into their pipelines. Knowing this allows teams to plan their workflows effectively, reducing idle time and preventing unexpected delays.
+
+<Note>
+### How can teams optimize their workflow given this provisioning time?
+</Note>
+
+We recommend that teams:
+
+1. **Test environments in advance**: Ensure familiarity with provisioning times before building dependent workflows or automations.
+2. **Integrate with planning**: Account for the provisioning time when scheduling pipeline runs or cluster-dependent tasks.
+3. **Consult documentation**: Review all available [documentation](http://docs.d3d.dev/) for additional context on provisioning and infrastructure requirements.

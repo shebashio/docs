@@ -1,0 +1,44 @@
+---
+title: "Deploying an ephemeral cluster"
+description: "How to deploy a pre-configured ephemeral Kubernetes cluster in DEDZED"
+---
+
+## Deploying an ephemeral cluster
+
+A key feature of the D3DZ3D environment is its ability to rapidly deploy ephemeral Kubernetes clusters. These clusters come pre-configured to your specifications with Big Bang applications. This provides everyone with a DevSecOps-compliant ephemeral environment for two main purposes: rapid testing of Big Bang integrations and hands-on training in Big Bang deployment to Kubernetes.
+
+To start, open your browser to [https://dedzed.blacklabel.mil](https://dedzed.blacklabel.mil).
+
+<Tip>
+Watch the guided tutorial below to understand the deployment flow.
+</Tip>
+
+<iframe
+  src="https://www.loom.com/embed/718735aa1c49493aa47267c5804dc0ea"
+  width="100%"
+  height="400"
+  frameBorder="0"
+  allow="fullscreen"
+/>
+
+---
+
+## Create a new environment from the DEDZED Command Dashboard
+
+To create a new environment from the DEDZED Command Dashboard, follow these steps:
+
+1. Go to [dedzed.blacklabel.mil](https://dedzed.blacklabel.mil) and authenticate using your `@usa.dev` provided identity.
+2. Click on **Environments** to select your cloud provider (e.g., **AKS**).
+3. Customize the cluster components, such as the cluster name and the applications to install (e.g., **ArgoCD**, **GitLab**, and **Vault**).
+4. Enter a valid GitHub.com account for accessing the **flux** monitored **git repository**.
+5. Choose between a vanilla cluster or **Big Bang** included for additional components.
+6. Set the environment time to live (default is **7** hours).
+7. Submit the request and wait for about **20 minutes** for the setup to complete.
+8. Monitor the progress in the table, including **GitHub actions** and **Terraform** **workspaces**.
+9. Wait for the cluster to become available by checking for the **Explore Cluster** and **Ask Pablo** icons.
+10. Access the **Service Endpoints** section to view **DNS hostnames** of web-based services.
+11. Use the **Explore Cluster** button within a KASM Workspace session to check deployment status.
+12. Monitor the deployment progress of selected services like **ArgoCD**, **Vault**, and **GitLab** using **k9s**.
+13. Check the **readiness** of services by ensuring pods are running and in a **ready** state.
+14. Wait for all services to be fully available before accessing and using them.
+15. Once all services are running, you can interact with your ephemeral **Kubernetes** cluster equipped with **Big Bang** components.

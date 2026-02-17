@@ -1,0 +1,97 @@
+---
+title: "How do I connect to my DEDZED ephemeral cluster?"
+description: "Step-by-step instructions for connecting to AKS and EKS clusters"
+---
+
+<Note>
+### How do I connect to my DEDZED ephemeral cluster?
+</Note>
+
+<iframe
+  src="https://www.loom.com/embed/fe9bb9158df84f1fa12b9e7dff204148"
+  width="100%"
+  height="400"
+  frameBorder="0"
+  allow="fullscreen"
+/>
+
+---
+
+## Connecting to Azure Kubernetes (AKS) clusters
+
+<Warning>
+Ensure you have an unexpired CAC plugged in to your machine.
+</Warning>
+
+### Creating your Rancher API token
+
+1. Navigate to [https://kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil) and click the **Ping Identity** option.
+2. Sign in with your `firstname.lastname@usa.dev` account and **Use a certificate or smart card** option to login.
+3. Once you're in the KASM console, start a KASM workspace session using **SHE BASH Ubuntu** or **Windows 11**.
+4. Within the KASM workspace session, open a browser and navigate to [DEDZED Rancher Service](https://rancher.dso.sh/).
+   - Login with your DEDZED username & password.
+5. Go to **Account & API Keys** section by clicking on your profile picture on the top right corner of the screen.
+6. Click **Create API Key**.
+7. Set your token expiration date and **Scope** to "No Scope" and click **Create**.
+8. On the following page, copy & save your **Bearer Token** and click **Done**.
+9. Keep this webpage open and proceed to the next steps.
+
+---
+
+## Connecting to your cluster(s)
+
+<Warning>
+Before proceeding further, ensure your requested cluster(s) is online and available to accept incoming connections. Otherwise, the cluster connection script will fail due to unavailable endpoints.
+
+If you have not requested a cluster yet, please refer to the [Deploying an Ephemeral Cluster](/getting-started/deploying-cluster) guide.
+</Warning>
+
+### Connection instructions for SHE BASH Ubuntu workspace session
+
+1. On your Ubuntu desktop, right click on the `aks_local_init.sh` and select **Open with "Terminal Emulator"**. If you don't see **Terminal Emulator** option by default, expand the **Open With Other Application...** option and search for **Terminal Emulator**.
+
+   Alternatively, you can open the **Terminal Emulator** directly and execute the script via command line:
+
+   ```bash
+   ~/Desktop/aks_local_init.sh
+   ```
+
+2. On first run, the script will prompt for your rancher API token. Copy & paste your token in the terminal and hit return to proceed.
+3. The script will lookup and prompt you to select the AKS cluster you want to connect to. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
+4. You can now use **k9s** or **kubectl** commands to interact with your cluster resources.
+
+### Connection instructions for Windows 11 workspace session
+
+1. On your windows desktop, double click on the `aks_local_init.bat` file (the file with double-gear icon).
+2. On first run, the script will prompt for your rancher API token. Copy & paste your token in the terminal and hit return to proceed.
+3. The script will lookup and prompt you to select the AKS cluster you want to connect to. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
+4. You can now use **k9s** or **kubectl** commands to interact with your cluster resources.
+
+Check out the **k9s** cheat sheet for a reference guide to working within **k9s**.
+
+<Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
+  Quick reference guide for working with k9s.
+</Card>
+
+---
+
+## Connecting to Amazon Elastic Kubernetes (EKS) clusters
+
+<Warning>
+DISABLED FOR BETA TESTING
+</Warning>
+
+1. Log into the Kasm Virtual Desktop Infrastructure (VDI) at [https://kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil)
+2. Open the terminal emulator within the VDI
+3. Run the initialization script by entering the following command:
+
+```bash
+./eks_local_init.sh
+```
+
+4. When prompted, enter your cluster name (which is the Terraform workspace name for -core-infra)
+5. Input your full SSO principal name, including the domain (e.g., `username@usa.dev`)
+
+The script will automatically establish a connection to your EKS cluster and start a k9s session in the same terminal, providing a CLI-based Kubernetes management interface.
+
+You can then use **k9s** or **kubectl** commands to interact with your cluster resources.

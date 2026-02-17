@@ -1,0 +1,136 @@
+---
+title: "k9s cheat sheet"
+description: "Quick reference guide for the k9s Kubernetes terminal management tool"
+---
+
+## k9s cheat sheet
+
+A quick reference guide for working with the k9s terminal application—a powerful tool for managing Kubernetes clusters from the command line.
+
+---
+
+### Launching k9s
+
+```bash
+# Launch k9s with the current context
+k9s
+
+# Launch k9s with a specific context
+k9s --context <context-name>
+```
+
+---
+
+### Basic navigation
+
+- **Move between resources**: Use the arrow keys or `j` (down) and `k` (up).
+- **Select resource**: Press `Enter` to view details or sub-resources.
+- **Go back**: Press `Esc` to return to the previous screen.
+- **Quit k9s**: Press `Ctrl+C` or `q`.
+
+---
+
+### Resource views
+
+Switch resource view by pressing `:` and typing the resource abbreviation or name.
+
+**Common resource shortcuts:**
+
+| Command    | Resource           |
+| ---------- | ------------------ |
+| `:po`      | Pods               |
+| `:dp`      | Deployments        |
+| `:svc`     | Services           |
+| `:cm`      | ConfigMaps         |
+| `:ing`     | Ingresses          |
+| `:ns`      | Namespaces         |
+| `:pv`      | PersistentVolumes  |
+| `:secret`  | Secrets            |
+
+- **List all resource shortcuts**: Press `Tab` after `:` to see all options.
+
+---
+
+### Filtering and searching
+
+- **Filter resources**: Press `/` and type your filter query. Supports regex and fuzzy searching.
+- **Clear filter**: Press `Esc` or `Ctrl+u`.
+- **Search across resources**: Press `Ctrl+f` and enter your search term.
+
+---
+
+### Viewing resource details
+
+- **Describe resource**: Press `d`.
+- **View logs**: Press `l` (works with Pods).
+  - **Follow logs**: Press `Shift+f` within the logs view.
+- **View YAML manifest**: Press `y`.
+- **View metrics**: Press `0` (zero) in the Pods view.
+
+---
+
+### Resource actions
+
+- **Edit resource**: Press `e` (opens in your default editor).
+- **Delete resource**: Press `Ctrl+d`.
+- **Scale deployment**: Use `+` or `-` to increase or decrease replicas.
+- **Execute command in pod**: Press `x` (e.g., open a shell).
+- **Port forwarding**: Press `Shift+f` and set up port forwarding.
+
+---
+
+### Namespace and context management
+
+- **Switch namespace**: Press `n` and select from the list.
+- **View all namespaces**: Toggle with `Shift+a`.
+- **Switch contexts**: Press `:ctx` and select the desired context.
+
+---
+
+### Key bindings summary
+
+#### Navigation
+
+| Key          | Action                           |
+| ------------ | -------------------------------- |
+| `j` / `k`    | Move down / up                   |
+| `h` / `l`    | Move left / right or collapse / expand |
+| `g`          | Go to top                        |
+| `G`          | Go to bottom                     |
+| `Ctrl+f` / `Ctrl+b` | Page down / up           |
+
+#### Resource interaction
+
+| Key          | Action                     |
+| ------------ | -------------------------- |
+| `/`          | Filter resources           |
+| `d`          | Describe selected resource |
+| `l`          | View logs                  |
+| `e`          | Edit resource              |
+| `y`          | View YAML                  |
+| `s`          | Save YAML to a file        |
+| `Ctrl+d`     | Delete resource            |
+| `x`          | Execute command in Pod     |
+| `Shift+f`    | Port forwarding            |
+| `+` / `-`    | Scale deployment up / down |
+
+#### General commands
+
+| Key          | Action                          |
+| ------------ | ------------------------------- |
+| `:`          | Command mode (enter resource shortcuts) |
+| `Esc`        | Back or clear filter            |
+| `Ctrl+r`     | Refresh view                    |
+| `?`          | Help menu                       |
+| `Ctrl+a`     | Select all                      |
+| `q` / `Ctrl+C` | Quit k9s                     |
+
+---
+
+### Tips and tricks
+
+- **Customize k9s**: Edit `~/.k9s/config.yml` to customize themes and settings.
+- **Copy to clipboard**: Press `c` in supported views.
+- **Toggle wide view**: Press `w` to toggle wide columns.
+- **View previous commands**: Press `Ctrl+p` to see command history.
+- **Bookmark resources**: Press `Shift+b` to bookmark, and `b` to view bookmarks.

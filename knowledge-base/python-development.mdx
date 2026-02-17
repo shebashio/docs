@@ -1,0 +1,77 @@
+---
+title: "Python development"
+description: "Getting started with Python development in your DEDZED Kasm workspace"
+---
+
+<Tip>
+For ease, Anaconda (`conda`) is preinstalled on our [Ubuntu](#getting-started-ubuntu) and [Windows](#getting-started-windows-11) Workspace Images.
+</Tip>
+
+## Getting started: Ubuntu
+
+Select **SHE BASH Ubuntu** from the Kasm list of available workspace images.
+
+Once loaded, open **Terminal Emulator** either by selecting it from the Applications menu or by right clicking on the Desktop and choosing **Open Terminal Emulator Here**.
+
+Create a new, isolated Python environment using `conda`.
+
+```bash
+conda create --name the-thing-im-doing python=3.10
+# python=3.10 can be adjusted based on your project requirements
+
+conda activate the-thing-im-doing
+
+# for ease use conda to install global dependencies (such as jupyter)
+conda install jupyter
+
+# make dotenv available to your python environment
+conda install -c conda-forge python-dotenv
+
+# make sure to follow the interactive prompts to install required dependencies
+```
+
+### Testing with an example repository
+
+For the purposes of demonstration and to leverage LLMs in your Python development we recommend getting started using the [AskSage Open Source Community](https://github.com/Ask-Sage/AskSage-Open-Source-Community.git) repo (a paid subscription to AskSage is required for API access). In your terminal window run:
+
+```bash
+git clone https://github.com/Ask-Sage/AskSage-Open-Source-Community.git
+cd AskSage-Open-Source-Community
+# open the repo in VS Code
+code .
+```
+
+VS Code will prompt you to install the Python extension, which you should do. This will let you run the Jupyter Notebooks (`.ipynb` files) from within your VS Code editor.
+
+You can operate fully within your VS Code IDE or you can toggle between the system's terminal application and the IDE. If you want to remain entirely within VS Code, you'll have to activate the `conda` environment created earlier.
+
+From within VS Code use the keyboard shortcut `Ctrl ~` to open a new terminal.
+
+Rerun `conda activate` in this terminal session.
+
+Then install all the dependencies for the project:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Getting started: Windows 11
+
+If you are using Windows 11 and would like to use Python for development activities, please use the following instructions to open an **Anaconda Prompt** in your environment:
+
+1. From the **Start** menu search for **Anaconda**.
+2. Open **Anaconda Prompt**.
+3. By default, you will have a `base` environment.
+4. Create a new environment:
+
+```bash
+conda create --name $ENVIRONMENT_NAME python=$PYTHON_VERSION
+```
+
+```bash
+conda activate $ENVIRONMENT_NAME
+```
+
+5. As that populates the requisite packages, make sure to follow the on-screen prompts (`Y`) to allow the installation of packages.

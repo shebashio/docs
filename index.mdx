@@ -1,97 +1,63 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "DEDZED Documentation"
+description: "Welcome to the D3DZ3D field manual"
 ---
 
-## Setting up
+<Info>
+Welcome to the D3DZ3D field manual! This documentation is designed to guide you through the various features and functionalities of the platform.
+</Info>
 
-Get your documentation site up and running in minutes.
+## Getting started
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Before you begin" icon="book" href="/getting-started/before-you-begin">
+    Prerequisites and recommended pre-reading.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Self-registration" icon="user-plus" href="/getting-started/self-registration">
+    Register your DEDZED account and access resources.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Deploy an ephemeral cluster" icon="server" href="/getting-started/deploying-cluster">
+    Deploy a pre-configured ephemeral Kubernetes cluster.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
+    Connect to your AKS or EKS cluster.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Links to common services
 
-Everything you need to create world-class documentation.
+**DEDZED**
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+- [Environment](https://dedzed.blacklabel.mil/d3dz3d/) — Ephemeral development environment platform
+- [Training](https://dedzed.blacklabel.mil/training) — Training modules for developers and DSO engineers
+- [GovGPT](https://dedzed.blacklabel.mil/govgpt) — OpenAI-Powered ChatGPT
+- [Kasm](https://kasm.dedzed.blacklabel.mil/) — Zero-trust browser desktop
+- [Rancher](https://rancher.dso.sh/) — Multi-k8s-cluster orchestration platform
 
-## Need inspiration?
+**Beta testing only**
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
+- [Gitlab](https://gitlab.beta.dso.sh/)
+- [Sonarqube](https://sonarqube.beta.dso.sh/)
+
+## Knowledge base
+
+<CardGroup cols={2}>
+  <Card title="What is DEDZED?" icon="circle-question" href="/knowledge-base/what-is-dedzed">
+    Learn about the platform and its capabilities.
+  </Card>
+  <Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
+    Quick reference guide for the k9s Kubernetes tool.
+  </Card>
+  <Card title="Python development" icon="python" href="/knowledge-base/python-development">
+    Get started with Python in your Kasm workspace.
+  </Card>
+  <Card title="Ask Pablo" icon="robot" href="/knowledge-base/ask-pablo">
+    Intelligent Kubernetes assistant for cluster management.
+  </Card>
+</CardGroup>
+
+## Support
+
+<Card title="Contact and support" icon="headset" href="/support/contact" horizontal>
+  Report issues or get help with DEDZED.
 </Card>
