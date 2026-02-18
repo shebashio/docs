@@ -1,6 +1,6 @@
 ---
 title: "How do I connect to my DEDZED ephemeral cluster?"
-description: "Step-by-step instructions for connecting to AKS and EKS clusters"
+description: "Step-by-step instructions for connecting to your DEDZED clusters"
 ---
 
 <Note>
@@ -40,31 +40,19 @@ Ensure you have an unexpired CAC plugged in to your machine.
 
 ## Connecting to your cluster(s)
 
+Your clusters are automatically synced when your Kasm workspace starts. A `setup.sh` script on your desktop handles the connection setup.
+
 <Warning>
-Before proceeding further, ensure your requested cluster(s) is online and available to accept incoming connections. Otherwise, the cluster connection script will fail due to unavailable endpoints.
+Before proceeding further, ensure your requested cluster(s) is online and available to accept incoming connections. Otherwise, the cluster connection will fail due to unavailable endpoints.
 
 If you have not requested a cluster yet, please refer to the [Deploying an Ephemeral Cluster](/getting-started/deploying-cluster) guide.
 </Warning>
 
-### Connection instructions for SHE BASH Ubuntu workspace session
+### Automatic cluster sync
 
-1. On your Ubuntu desktop, right click on the `aks_local_init.sh` and select **Open with "Terminal Emulator"**. If you don't see **Terminal Emulator** option by default, expand the **Open With Other Application...** option and search for **Terminal Emulator**.
-
-   Alternatively, you can open the **Terminal Emulator** directly and execute the script via command line:
-
-   ```bash
-   ~/Desktop/aks_local_init.sh
-   ```
-
-2. On first run, the script will prompt for your rancher API token. Copy & paste your token in the terminal and hit return to proceed.
-3. The script will lookup and prompt you to select the AKS cluster you want to connect to. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
-4. You can now use **k9s** or **kubectl** commands to interact with your cluster resources.
-
-### Connection instructions for Windows 11 workspace session
-
-1. On your windows desktop, double click on the `aks_local_init.bat` file (the file with double-gear icon).
-2. On first run, the script will prompt for your rancher API token. Copy & paste your token in the terminal and hit return to proceed.
-3. The script will lookup and prompt you to select the AKS cluster you want to connect to. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
+1. Start a Kasm workspace session using **SHE BASH Ubuntu** or **Windows 11**.
+2. On first run, the `setup.sh` script on your desktop will prompt for your Rancher API token. Copy & paste your token in the terminal and hit return to proceed.
+3. The script will sync your available clusters. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
 4. You can now use **k9s** or **kubectl** commands to interact with your cluster resources.
 
 Check out the **k9s** cheat sheet for a reference guide to working within **k9s**.
@@ -72,26 +60,3 @@ Check out the **k9s** cheat sheet for a reference guide to working within **k9s*
 <Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
   Quick reference guide for working with k9s.
 </Card>
-
----
-
-## Connecting to Amazon Elastic Kubernetes (EKS) clusters
-
-<Warning>
-DISABLED FOR BETA TESTING
-</Warning>
-
-1. Log into the Kasm Virtual Desktop Infrastructure (VDI) at [https://kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil)
-2. Open the terminal emulator within the VDI
-3. Run the initialization script by entering the following command:
-
-```bash
-./eks_local_init.sh
-```
-
-4. When prompted, enter your cluster name (which is the Terraform workspace name for -core-infra)
-5. Input your full SSO principal name using your Ping login
-
-The script will automatically establish a connection to your EKS cluster and start a k9s session in the same terminal, providing a CLI-based Kubernetes management interface.
-
-You can then use **k9s** or **kubectl** commands to interact with your cluster resources.
