@@ -57,7 +57,7 @@
       "anchors": [
         {
           "anchor": "DEDZED Platform",
-          "href": "https://dedzed.dso.sh",
+          "href": "https://zt.dedzed.icbm.dev",
           "icon": "rocket"
         },
         {
@@ -82,7 +82,7 @@
     "primary": {
       "type": "button",
       "label": "Launch DEDZED",
-      "href": "https://dedzed.dso.sh"
+      "href": "https://zt.dedzed.icbm.dev"
     }
   },
   "contextual": {
