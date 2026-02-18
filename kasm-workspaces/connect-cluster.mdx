@@ -26,7 +26,7 @@ Ensure you have an unexpired CAC plugged in to your machine.
 ### Creating your Rancher API token
 
 1. Navigate to [https://kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil) and click the **Ping Identity** option.
-2. Sign in with your `firstname.lastname@usa.dev` account and **Use a certificate or smart card** option to login.
+2. Sign in with your valid identity in Ping and **Use a certificate or smart card** option to login.
 3. Once you're in the KASM console, start a KASM workspace session using **SHE BASH Ubuntu** or **Windows 11**.
 4. Within the KASM workspace session, open a browser and navigate to [DEDZED Rancher Service](https://rancher.dso.sh/).
    - Login with your DEDZED username & password.
@@ -90,7 +90,7 @@ DISABLED FOR BETA TESTING
 ```
 
 4. When prompted, enter your cluster name (which is the Terraform workspace name for -core-infra)
-5. Input your full SSO principal name, including the domain (e.g., `username@usa.dev`)
+5. Input your full SSO principal name using your valid identity in Ping
 
 The script will automatically establish a connection to your EKS cluster and start a k9s session in the same terminal, providing a CLI-based Kubernetes management interface.
 
