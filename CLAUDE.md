@@ -31,7 +31,7 @@ npm mint update
 - `index.mdx` — landing page with service links and navigation cards
 - `getting-started/` — onboarding guides: prerequisites, self-registration, cluster deployment, provisioning info
 - `kasm-workspaces/` — Kasm VDI documentation: working within Kasm, cluster connection, software installation
-- `knowledge-base/` — reference material: what is DEDZED, ephemeral environments FAQ, k9s cheat sheet, Python dev, Ask Pablo
+- `knowledge-base/` — reference material: what is DEDZED, ephemeral environments FAQ, k9s cheat sheet, Python dev, DEDZED AI
 - `support/` — contact info, terms, privacy policy
 - `images/`, `logo/` — static assets
 - `.mintignore` — files excluded from Mintlify builds (drafts, `*.draft.mdx`)

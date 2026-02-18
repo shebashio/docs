@@ -39,7 +39,7 @@
               "knowledge-base/ephemeral-environments",
               "knowledge-base/k9s-cheat-sheet",
               "knowledge-base/python-development",
-              "knowledge-base/ask-pablo"
+              "knowledge-base/dedzed-ai"
             ]
           },
           {
@@ -62,7 +62,7 @@
         },
         {
           "anchor": "Kasm VDI",
-          "href": "https://kasm.dedzed.dso.sh",
+          "href": "https://kasm.dedzed.blacklabel.mil",
           "icon": "desktop"
         }
       ]
