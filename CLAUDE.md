@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-This is the DEDZED (Digital Environment and Development for Zero-trust Enablement and Data) documentation site built on Mintlify. Pages are MDX files with YAML frontmatter. Site configuration lives in `docs.json`.
+This is the DEDZED documentation site built on Mintlify. Pages are MDX files with YAML frontmatter. Site configuration lives in `docs.json`.
 
 ## Commands
 
@@ -38,7 +38,7 @@ npm mint update
 
 ## Important terminology
 
-- **DEDZED** / **D3DZ3D** — the platform name (Digital Environment and Development for Zero-trust Enablement and Data)
+- **DEDZED** / **D3DZ3D** — the platform name (proper noun, NOT an acronym — never expand it)
 - **DEDZED Command Dashboard** — the main portal UI (do NOT refer to this as "Backstage")
 - **Ping Identity** — the authentication provider (do NOT refer to this as "EntraID" or "Microsoft EntraID")
 - **Kasm** — the Virtual Desktop Infrastructure (VDI) browser-based desktop
