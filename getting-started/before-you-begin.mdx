@@ -22,5 +22,9 @@ Before you begin, please check out the recommended pre-read demo and additional 
 ## Additional requirements
 
 - **Chromium browser**: For the best performance, use a Chromium-based browser when interacting with the Kasm Virtual Desktop Infrastructure (VDI) — Edge or Chrome work best.
-- **Kasm VDI access**: Log in to the Kasm VDI at [https://kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil).
+- **Kasm VDI access**: Log in to the Kasm VDI at [https://kasm.icbm.dev](https://kasm.icbm.dev).
   - **Authentication**: Select **Ping Identity** to authenticate.
+
+## Network access
+
+All DEDZED services are protected by [AWS Verified Access](https://docs.aws.amazon.com/verified-access/latest/ug/what-is-verified-access.html), a clientless VPN replacement. When you navigate to a DEDZED endpoint, Verified Access performs a DNS redirect to our identity provider (Ping Identity) to authenticate and authorize you before connecting you to the service. No VPN client installation is required.

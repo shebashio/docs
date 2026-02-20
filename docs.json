@@ -57,12 +57,12 @@
       "anchors": [
         {
           "anchor": "DEDZED Platform",
-          "href": "https://zt.dedzed.icbm.dev",
+          "href": "https://dedzed.icbm.dev",
           "icon": "rocket"
         },
         {
           "anchor": "Kasm VDI",
-          "href": "https://kasm.dedzed.blacklabel.mil",
+          "href": "https://kasm.icbm.dev",
           "icon": "desktop"
         }
       ]
@@ -82,7 +82,7 @@
     "primary": {
       "type": "button",
       "label": "Launch DEDZED",
-      "href": "https://zt.dedzed.icbm.dev"
+      "href": "https://dedzed.icbm.dev"
     }
   },
   "contextual": {
