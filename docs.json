@@ -35,6 +35,7 @@
           {
             "group": "Knowledge base",
             "pages": [
+              "knowledge-base/zero-trust",
               "knowledge-base/what-is-dedzed",
               "knowledge-base/ephemeral-environments",
               "knowledge-base/k9s-cheat-sheet",
