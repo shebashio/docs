@@ -32,7 +32,7 @@ flowchart TB
     subgraph AWS["AWS GovCloud"]
         subgraph VDSS["VDSS VPC"]
             subgraph DMZ["DMZ Subnets"]
-                WAF["AWS WAF\nOrigin validation\nRate limiting\nPath enforcement"]
+                WAF["AWS WAF"]
                 ALB["ALB :443"]
                 WAF --> ALB
             end
@@ -42,7 +42,7 @@ flowchart TB
             end
         end
 
-        AVA["AWS Verified Access\nkasm.icbm.dev\n(PingFederate OIDC)"]
+        AVA["AWS Verified Access"]
 
         subgraph KasmVPC["Kasm VPC"]
             subgraph Webapps["Kasm Webapps"]
@@ -50,26 +50,26 @@ flowchart TB
                 WA2["Webapp-2"]
             end
             subgraph Agents["Kasm Agents"]
-                Agent["Agent\n(dynamic)"]
+                Agent["Agent"]
             end
         end
 
         TGW["Transit Gateway"]
     end
 
-    User -->|"1. HTTPS\nLogin + API"| DNS1
+    User -->|"HTTPS Login + API"| DNS1
     DNS1 --> AVA
     AVA -->|"authenticated"| WA1
     AVA -->|"authenticated"| WA2
 
-    User -->|"2. WSS\n/desktop/* only"| DNS2
+    User -->|"WSS /desktop/* only"| DNS2
     DNS2 --> WAF
     ALB -->|":8443"| Untrust
     Untrust --> Trust
     Trust --> TGW
     TGW --> Agent
 
-    Agent -.->|"3. internal_auth\nvalidate session"| WA1
+    Agent -.->|"internal_auth"| WA1
 ```
 
 ---
@@ -101,7 +101,7 @@ sequenceDiagram
     Note over B,AG: 2. WebSocket Connection (WAF-Protected, Bypasses AVA)
     B->>CF: kasm-direct.icbm.dev/desktop/{uuid}/...
     CF->>WAF: HTTPS request
-    Note over WAF: Validate Origin = https://kasm.icbm.dev<br/>Enforce /desktop/{uuid} path pattern<br/>Rate limit per source IP<br/>Block known bad inputs
+    Note over WAF: Validate Origin, enforce path pattern, rate limit, block bad inputs
     WAF->>ALB: Request passes WAF rules
     ALB->>PA: :8443 (through firewall)
     PA->>AG: Kasm Agent
