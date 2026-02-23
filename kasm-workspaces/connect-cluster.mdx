@@ -1,11 +1,34 @@
 ---
-title: "How do I connect to my DEDZED ephemeral cluster?"
-description: "Step-by-step instructions for connecting to your DEDZED clusters"
+title: "Connect to your DEDZED ephemeral cluster"
+description: "Step-by-step instructions for connecting to your DEDZED Kubernetes clusters from within a Kasm workspace session"
+sidebarTitle: "Connect to cluster"
 ---
 
-<Note>
-### How do I connect to my DEDZED ephemeral cluster?
-</Note>
+## Overview
+
+After you deploy an ephemeral cluster through the DEDZED Command Dashboard, you connect to it from within your Kasm workspace session. The connection flow involves creating a Rancher API token, running an automatic sync script, and configuring `kubectl` access.
+
+```mermaid
+sequenceDiagram
+    participant U as You (Kasm session)
+    participant R as Rancher
+    participant S as setup.sh
+    participant K as Kubernetes cluster
+    U->>R: Create API token
+    R-->>U: Bearer token
+    U->>S: Run setup script
+    S->>R: Fetch cluster configs
+    R-->>S: kubeconfig files
+    S-->>U: Configs saved to ~/Documents
+    U->>K: kubectl / k9s
+    K-->>U: Ping Identity auth prompt
+    U-->>K: Authenticate
+    K-->>U: Cluster access granted
+```
+
+<Tip>
+Watch the guided walkthrough below to see the full connection process.
+</Tip>
 
 <iframe
   src="https://www.loom.com/embed/fe9bb9158df84f1fa12b9e7dff204148"
@@ -17,59 +40,135 @@ description: "Step-by-step instructions for connecting to your DEDZED clusters"
 
 ---
 
-## Connecting to Azure Kubernetes (AKS) clusters
+## Prerequisites
+
+Before connecting to a cluster, verify that:
+
+- You have an active Kasm workspace session running (see [Working within Kasm](/kasm-workspaces/working-within-kasm))
+- You have already deployed a cluster through the DEDZED Command Dashboard (see [Deploying an ephemeral cluster](/getting-started/deploying-cluster))
+- Your cluster status shows as **online** and ready to accept connections
 
 <Warning>
-Ensure you have an unexpired CAC plugged in to your machine.
+For Azure Kubernetes (AKS) clusters, ensure you have an unexpired CAC plugged in to your machine before proceeding.
 </Warning>
-
-### Creating your Rancher API token
-
-1. Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev) and click the **Ping Identity** option.
-2. Sign in with your Ping login and **Use a certificate or smart card** option to login.
-3. Once you're in the KASM console, start a KASM workspace session using **SHE BASH Ubuntu** or **Windows 11**.
-4. Within the KASM workspace session, open a browser and navigate to [DEDZED Rancher Service](https://rancher.icbm.dev/).
-   - Login with your DEDZED username & password.
-5. Go to **Account & API Keys** section by clicking on your profile picture on the top right corner of the screen.
-6. Click **Create API Key**.
-7. Set your token expiration date and **Scope** to "No Scope" and click **Create**.
-8. On the following page, copy & save your **Bearer Token** and click **Done**.
-9. Keep this webpage open and proceed to the next steps.
 
 ---
 
-## Connecting to your cluster(s)
+## Step 1: Create your Rancher API token
+
+You need a Rancher API token to authorize the cluster sync script.
+
+<Steps>
+  <Step title="Open Kasm and sign in">
+    Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev), click the **Ping Identity** option, and sign in. For AKS clusters, select the **Use a certificate or smart card** option.
+  </Step>
+  <Step title="Start a workspace session">
+    Launch a Kasm workspace using **SHE BASH Ubuntu** or **Windows 11**.
+  </Step>
+  <Step title="Open Rancher">
+    Within the Kasm workspace session, open a browser and navigate to the [DEDZED Rancher Service](https://rancher.icbm.dev/). Sign in with your DEDZED username and password.
+  </Step>
+  <Step title="Navigate to API keys">
+    Click your profile picture in the top-right corner and select **Account & API Keys**.
+  </Step>
+  <Step title="Create the token">
+    Click **Create API Key**. Set your token expiration date and set the **Scope** to "No Scope". Click **Create**.
+  </Step>
+  <Step title="Copy the token">
+    On the confirmation page, copy and save your **Bearer Token**. Click **Done**. Keep this page accessible — you will need the token in the next step.
+  </Step>
+</Steps>
+
+<Warning>
+Store your Bearer Token securely. If you lose it, you will need to create a new one. Tokens are not retrievable after you leave the confirmation page.
+</Warning>
+
+---
+
+## Step 2: Sync your clusters
 
 Your clusters are automatically synced when your Kasm workspace starts. A `setup.sh` script on your desktop handles the connection setup.
 
 <Warning>
-Before proceeding further, ensure your requested cluster(s) is online and available to accept incoming connections. Otherwise, the cluster connection will fail due to unavailable endpoints.
+Before proceeding, verify that your requested cluster is online and available to accept incoming connections. If the cluster is still provisioning, the sync will fail because the endpoints are not yet reachable.
 
-If you have not requested a cluster yet, please refer to the [Deploying an Ephemeral Cluster](/getting-started/deploying-cluster) guide.
+If you have not requested a cluster yet, see the [Deploying an ephemeral cluster](/getting-started/deploying-cluster) guide.
 </Warning>
 
-### Automatic cluster sync
+<Steps>
+  <Step title="Start or restart a workspace session">
+    If you already have a session open, you can run the `setup.sh` script manually from the desktop. Otherwise, start a new session — the script runs automatically on first launch.
+  </Step>
+  <Step title="Enter your Rancher API token">
+    When prompted, paste your Bearer Token into the terminal and press **Enter**.
+  </Step>
+  <Step title="Wait for the sync to complete">
+    The script contacts Rancher, discovers your available clusters, and downloads the kubeconfig files. If no clusters are available, you will see: `No clusters found or failed to fetch clusters`.
+  </Step>
+</Steps>
 
-1. Start a Kasm workspace session using **SHE BASH Ubuntu** or **Windows 11**.
-2. On first run, the `setup.sh` script on your desktop will prompt for your Rancher API token. Copy & paste your token in the terminal and hit return to proceed.
-3. The script will sync your available clusters. If no environment request or cluster(s) are available, it'll return `No clusters found or failed to fetch clusters`.
+---
 
-### Setting your KUBECONFIG
+## Step 3: Set your KUBECONFIG
 
-After the sync completes, your kubeconfig files are saved to the **Documents** directory. Set the `KUBECONFIG` environment variable to point to the correct cluster config:
+After the sync completes, kubeconfig files are saved to the `~/Documents` directory. Set the `KUBECONFIG` environment variable to point to the cluster you want to access:
 
 ```bash
 export KUBECONFIG=~/Documents/<your-cluster-name>.yaml
 ```
 
-### Accessing your cluster
+Replace `<your-cluster-name>` with the actual filename of your cluster config. You can list available configs with:
 
-1. Run **k9s** or **kubectl** to connect to your cluster.
-2. You will be prompted to authenticate via **Ping Identity** — complete the login to authorize access to the cluster.
-3. Once authenticated, you can interact with your cluster resources.
+```bash
+ls ~/Documents/*.yaml
+```
 
-Check out the **k9s** cheat sheet for a reference guide to working within **k9s**.
+<Tip>
+To make this persistent across terminal sessions, add the `export` line to your `~/.bashrc` or `~/.zshrc` file.
+</Tip>
 
-<Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
-  Quick reference guide for working with k9s.
-</Card>
+---
+
+## Step 4: Access your cluster
+
+With the `KUBECONFIG` set, use `kubectl` or `k9s` to interact with your cluster.
+
+```bash
+# Verify connectivity
+kubectl get nodes
+
+# Launch the k9s terminal UI
+k9s
+```
+
+On the first command, you will be prompted to authenticate via **Ping Identity**. Complete the login to authorize access to the cluster. After authentication, you can interact with your cluster resources normally.
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `No clusters found or failed to fetch clusters` | Cluster not yet provisioned or still deploying | Check cluster status in the DEDZED Command Dashboard and wait for it to show as online |
+| Authentication prompt loops | Expired Ping session or stale token | Create a new Rancher API token and re-run `setup.sh` |
+| `connection refused` errors | Cluster endpoints not reachable | Verify the cluster is online and your Kasm session has network connectivity |
+| Kubeconfig file not found in `~/Documents` | Sync script did not complete | Re-run `setup.sh` from the desktop and check for errors |
+
+---
+
+## Related resources
+
+<CardGroup cols={2}>
+  <Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
+    Quick reference guide for navigating and managing clusters with k9s.
+  </Card>
+  <Card title="Deploy a cluster" icon="cloud" href="/getting-started/deploying-cluster">
+    Request and deploy a new ephemeral Kubernetes cluster.
+  </Card>
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Learn how to create and use your Kasm virtual desktop session.
+  </Card>
+  <Card title="Install software" icon="download" href="/kasm-workspaces/install-software">
+    Options for installing additional tools in your VDI environment.
+  </Card>
+</CardGroup>

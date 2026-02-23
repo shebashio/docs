@@ -1,15 +1,37 @@
 ---
 title: "DEDZED AI"
-description: "Agentic AI capabilities across the DEDZED platform"
+description: "Agentic AI capabilities across the DEDZED platform — coding assistance, dashboard automation, and security analysis"
+sidebarTitle: "DEDZED AI"
 ---
 
-<Note>
-DEDZED AI brings agentic AI capabilities across the DEDZED platform — from your Kasm workspace to the DEDZED Command Dashboard and the Shredder Security Platform.
-</Note>
+## Overview
+
+DEDZED AI brings agentic AI capabilities across the DEDZED platform — from your Kasm workspace to the DEDZED Command Dashboard and the Shredder Security Platform. Each integration is purpose-built for its context, giving you AI assistance that understands the DEDZED environment and the task at hand.
+
+```mermaid
+flowchart LR
+    subgraph AI["DEDZED AI"]
+        K["Kasm Agent"]
+        D["Dashboard Agent"]
+        S["Shredder Agent"]
+    end
+
+    K -->|"Code + debug"| KW["Kasm Workspace"]
+    D -->|"Deploy + manage"| CMD["Command Dashboard"]
+    S -->|"Analyze + remediate"| SH["Shredder"]
+```
 
 ## Kasm workspace agent
 
-DEDZED AI is available as an agentic coding assistant in your Kasm workspace, powered by Claude Code. You can interact with it directly from your terminal to manage clusters, write and debug code, and streamline your development workflow.
+DEDZED AI is available as an agentic coding assistant in your Kasm workspace, powered by Claude Code. You can interact with it directly from your terminal to:
+
+- Write, debug, and refactor code
+- Manage Kubernetes clusters using `kubectl` and `k9s`
+- Navigate project structures and explain unfamiliar codebases
+- Generate tests and documentation
+- Troubleshoot build and deployment issues
+
+The agent runs in your terminal session and has access to the same tools and file system as you do. It operates within the security boundary of your Kasm workspace.
 
 <Warning>
 You must bring your own Claude subscription account or API key to use the DEDZED AI agent in your Kasm workspace.
@@ -17,11 +39,23 @@ You must bring your own Claude subscription account or API key to use the DEDZED
 
 ## DEDZED Command Dashboard
 
-DEDZED AI is integrated into the DEDZED Command Dashboard, where it performs dashboard operations on your behalf — deploying environments, managing cluster configurations, and automating routine tasks.
+DEDZED AI is integrated into the DEDZED Command Dashboard, where it performs dashboard operations on your behalf:
+
+- Deploy and tear down ephemeral environments
+- Manage cluster configurations and add-ons
+- Monitor environment status and health
+- Automate routine administrative tasks
+
+The dashboard agent understands the DEDZED resource model and can orchestrate multi-step workflows that would otherwise require multiple manual actions.
 
 ## Shredder Security Platform
 
-DEDZED AI is built into the Shredder Security Platform to analyze vulnerabilities discovered in application scans. It provides actionable insights and remediation guidance to help you resolve security findings faster.
+DEDZED AI is built into the [Shredder](/knowledge-base/shredder) Security Platform to analyze vulnerabilities discovered in application scans:
+
+- Summarize scan findings into readable reports
+- Prioritize vulnerabilities by risk and exploitability
+- Provide actionable remediation guidance
+- Investigate findings interactively via **AI Inspect** (see [Shredder](/knowledge-base/shredder#ai-inspect) for details)
 
 <iframe
   src="https://www.loom.com/embed/84072a122c034b2eae9e1f67c77ed863"
@@ -31,11 +65,19 @@ DEDZED AI is built into the Shredder Security Platform to analyze vulnerabilitie
   allow="fullscreen"
 />
 
+## Related pages
+
 <CardGroup cols={2}>
-  <Card title="Deploying an ephemeral cluster" icon="server" href="/getting-started/deploying-cluster">
-    Learn how to deploy your cluster.
+  <Card title="Shredder" icon="shield-halved" href="/knowledge-base/shredder">
+    Unified security scanning with quality gates and AI analysis.
   </Card>
-  <Card title="How do I connect to my cluster?" icon="link" href="/kasm-workspaces/connect-cluster">
-    Connect to your ephemeral cluster.
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Learn how to use the Kasm browser-based desktop environment.
+  </Card>
+  <Card title="Deploying a cluster" icon="server" href="/getting-started/deploying-cluster">
+    Step-by-step guide to deploying your ephemeral cluster.
+  </Card>
+  <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
+    Connect to your ephemeral cluster from Kasm.
   </Card>
 </CardGroup>

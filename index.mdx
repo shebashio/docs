@@ -1,11 +1,21 @@
 ---
 title: "DEDZED Documentation"
-description: "Welcome to the D3DZ3D field manual"
+description: "Welcome to the D3DZ3D field manual — your guide to the DEDZED platform, ephemeral clusters, and secure development environments."
+sidebarTitle: "Home"
 ---
 
-<Info>
-Welcome to the D3DZ3D field manual! This documentation is designed to guide you through the various features and functionalities of the platform.
-</Info>
+Welcome to the D3DZ3D field manual. This documentation walks you through the DEDZED platform, from account registration to deploying ephemeral Kubernetes clusters in secure, zero-trust environments.
+
+## How DEDZED works
+
+```mermaid
+flowchart LR
+    A[Register account] --> B[Launch Kasm VDI]
+    B --> C[Deploy cluster]
+    C --> D[Build and test]
+    D --> E[Cluster expires]
+    E --> C
+```
 
 ## Platform overview
 
@@ -31,25 +41,59 @@ A quick 5-minute walkthrough of the DEDZED platform and its capabilities.
   <Card title="Deploy an ephemeral cluster" icon="server" href="/getting-started/deploying-cluster">
     Deploy a pre-configured ephemeral Kubernetes cluster.
   </Card>
-  <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
-    Connect to your AKS or EKS cluster.
+  <Card title="Provision time" icon="clock" href="/getting-started/provision-time">
+    Understand cluster provisioning timelines.
+  </Card>
+  <Card title="Local install" icon="laptop" href="/getting-started/local-install">
+    Set up your local development environment.
   </Card>
 </CardGroup>
 
-## Links to common services
+## Kasm Workspaces
 
-**DEDZED**
+<CardGroup cols={2}>
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Navigate and use your browser-based Kasm desktop.
+  </Card>
+  <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
+    Connect to your AKS or EKS cluster from Kasm.
+  </Card>
+  <Card title="Install software" icon="download" href="/kasm-workspaces/install-software">
+    Install additional tools in your Kasm workspace.
+  </Card>
+</CardGroup>
 
-- [Command Dashboard](https://dedzed.icbm.dev/) — DEDZED Command Dashboard
-- [Kasm](https://kasm.icbm.dev/) — Zero-trust browser desktop
-- [GitHub](https://github.icbm.dev/) — Source code management
-- [SHREDDER](https://shredder.icbm.dev/) — SHREDDER platform
+## Common services
+
+<CardGroup cols={2}>
+  <Card title="Command Dashboard" icon="gauge" href="https://dedzed.icbm.dev/">
+    Launch the DEDZED Command Dashboard.
+  </Card>
+  <Card title="Kasm VDI" icon="desktop" href="https://kasm.icbm.dev/">
+    Access your zero-trust browser desktop.
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.icbm.dev/">
+    Source code management and repositories.
+  </Card>
+  <Card title="SHREDDER" icon="shield-halved" href="https://shredder.icbm.dev/">
+    Security platform for vulnerability management.
+  </Card>
+</CardGroup>
 
 ## Knowledge base
 
 <CardGroup cols={2}>
   <Card title="What is DEDZED?" icon="circle-question" href="/knowledge-base/what-is-dedzed">
     Learn about the platform and its capabilities.
+  </Card>
+  <Card title="Zero-trust architecture" icon="lock" href="/knowledge-base/zero-trust">
+    Understand the zero-trust network model behind DEDZED.
+  </Card>
+  <Card title="SHREDDER" icon="shield-halved" href="/knowledge-base/shredder">
+    Security scanning and vulnerability management.
+  </Card>
+  <Card title="Ephemeral environments" icon="cloud" href="/knowledge-base/ephemeral-environments">
+    How ephemeral clusters work and why they matter.
   </Card>
   <Card title="k9s cheat sheet" icon="terminal" href="/knowledge-base/k9s-cheat-sheet">
     Quick reference guide for the k9s Kubernetes tool.
@@ -64,6 +108,14 @@ A quick 5-minute walkthrough of the DEDZED platform and its capabilities.
 
 ## Support
 
-<Card title="Contact and support" icon="headset" href="/support/contact" horizontal>
-  Report issues or get help with DEDZED.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Contact and support" icon="headset" href="/support/contact">
+    Report issues or get help with DEDZED.
+  </Card>
+  <Card title="Terms and conditions" icon="file-contract" href="/support/terms-and-conditions">
+    Review the platform terms of use.
+  </Card>
+  <Card title="Privacy policy" icon="user-shield" href="/support/privacy-policy">
+    Learn how your data is handled.
+  </Card>
+</CardGroup>

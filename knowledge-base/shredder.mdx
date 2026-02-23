@@ -1,6 +1,7 @@
 ---
 title: "Shredder"
-description: "Unified security scanning platform with customizable quality gates"
+description: "Unified security scanning platform with customizable quality gates, AI-powered analysis, and supply chain attestation"
+sidebarTitle: "Shredder"
 ---
 
 ## Overview
@@ -13,20 +14,50 @@ Shredder is an internal service and can only be reached from within an active Ka
 
 ![Shredder Dashboard](/images/shredder-dashboard.png)
 
+## Scanning workflow
+
+```mermaid
+flowchart LR
+    A["Upload Artifact"] --> B["Select Engines"]
+    B --> C["Run Scans"]
+    C --> D["Aggregate Results"]
+    D --> E{"Quality Gate"}
+    E -->|Pass| F["Approved"]
+    E -->|Fail| G["Blocked"]
+    D --> H["Generate SBOM"]
+    D --> I["AI Summary"]
+    H --> J["Chainloop Attestation"]
+```
+
+You upload an artifact (container image, source archive, or filesystem snapshot), select which scanning engines to run, and Shredder executes them in parallel. Results are aggregated into a single report, evaluated against your quality gates, and attached to a Chainloop attestation.
+
 ## Scanning engines
 
 Shredder integrates the following tools to provide comprehensive coverage across scan types:
 
-| Engine | Purpose |
-|---|---|
-| **Grype** | Software composition analysis (SCA) — identifies known vulnerabilities in dependencies |
-| **Trivy** | Container image and filesystem scanning for CVEs, misconfigurations, and secrets |
-| **Semgrep** | Static application security testing (SAST) — pattern-based source code analysis |
-| **SonarQube** | Code quality and security analysis with language-specific rulesets |
-| **Ghidra** | Binary analysis and reverse engineering for compiled artifacts |
-| **Syft** | Software bill of materials (SBOM) generation for containers and filesystems |
-| **Dependency-Track** | Continuous SBOM analysis and vulnerability monitoring across the software supply chain |
-| **Chainloop** | Software supply chain attestation and evidence collection |
+| Engine | Category | Purpose |
+|--------|----------|---------|
+| **Grype** | SCA | Identifies known vulnerabilities in dependencies |
+| **Trivy** | Container / filesystem | Scans for CVEs, misconfigurations, and secrets |
+| **Semgrep** | SAST | Pattern-based source code analysis |
+| **SonarQube** | Code quality | Security and quality analysis with language-specific rulesets |
+| **Ghidra** | Binary analysis | Reverse engineering for compiled artifacts |
+| **Syft** | SBOM | Software bill of materials generation |
+| **Dependency-Track** | Supply chain | Continuous SBOM analysis and vulnerability monitoring |
+| **Chainloop** | Attestation | Supply chain attestation and evidence collection |
+
+### Coverage by scan type
+
+| Scan type | Engines |
+|-----------|---------|
+| Vulnerability detection (CVE) | Grype, Trivy |
+| Static code analysis (SAST) | Semgrep, SonarQube |
+| Container image scanning | Trivy |
+| Binary analysis | Ghidra |
+| SBOM generation | Syft |
+| Supply chain monitoring | Dependency-Track, Chainloop |
+| Secrets detection | Trivy |
+| License compliance | Grype, Dependency-Track |
 
 ## Quality gates
 
@@ -34,14 +65,30 @@ Shredder allows you to define custom pass/fail criteria that form **quality gate
 
 Different environments can enforce different gates. For example:
 
-- A **development** environment may allow artifacts with known CVEs to pass, enabling rapid iteration without blocking builds on every finding.
-- A **production** environment may enforce strict limits on CVE count, severity thresholds, or license types — blocking any artifact that does not meet compliance requirements.
+- A **development** gate may allow artifacts with known CVEs to pass, enabling rapid iteration without blocking builds on every finding.
+- A **production** gate may enforce strict limits on CVE count, severity thresholds, or license types — blocking any artifact that does not meet compliance requirements.
+
+| Gate parameter | Description | Example |
+|---------------|-------------|---------|
+| Max critical CVEs | Maximum number of critical-severity vulnerabilities allowed | 0 for production, 5 for development |
+| Max high CVEs | Maximum number of high-severity vulnerabilities allowed | 0 for production, 20 for development |
+| Blocked licenses | License types that cause an automatic failure | GPL-3.0, AGPL-3.0 |
+| Required SBOM | Whether an SBOM must be generated | Required for production |
+| Secrets detected | Whether any detected secrets cause failure | Always fail |
 
 This gives teams the flexibility to shift security left without slowing down development, while still enforcing hard requirements before production deployment.
 
 ## Attestation and CBOM
 
 Shredder generates a cryptographic bill of materials (CBOM) for cryptographic asset findings discovered during scans. All scan outputs are attached to a Chainloop attestation, providing a verifiable record of what was scanned, what was found, and what cryptographic assets are in use across your artifacts.
+
+The attestation workflow:
+
+1. Shredder completes all selected scans on the artifact
+2. Syft generates an SBOM capturing all components and dependencies
+3. Shredder identifies cryptographic assets and produces a CBOM
+4. Scan results, SBOM, and CBOM are bundled into a Chainloop attestation
+5. The attestation is signed and stored for audit and verification
 
 ## AI summary
 
@@ -63,5 +110,8 @@ AI Inspect requires your own Anthropic API key. Usage costs are billed to your a
   </Card>
   <Card title="Zero trust access" icon="shield" href="/knowledge-base/zero-trust">
     How DEDZED secures access to platform services.
+  </Card>
+  <Card title="What is DEDZED?" icon="circle-info" href="/knowledge-base/what-is-dedzed">
+    Platform overview and core capabilities.
   </Card>
 </CardGroup>

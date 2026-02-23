@@ -1,129 +1,140 @@
 ---
 title: "Beta user self-registration"
-description: "Step-by-step guide to register your DEDZED account and access resources"
+description: "Step-by-step guide to register your DEDZED account, complete first-time sign in, and access resources"
+sidebarTitle: "Self-registration"
 ---
 
-## DEDZED beta user self-registration guide
+Welcome to the DEDZED beta program. This guide walks you through the three milestones required to register your account, initialize your credentials, and access DEDZED resources.
 
-Welcome to the DEDZED beta program! Please follow the steps below to register your account and access DEDZED resources.
+## Registration flow
 
-Here is your quick-start guide to registering your account, initializing it, then accessing your DEDZED resources!
+```mermaid
+flowchart LR
+    A[Visit registration page with CAC] --> B[Request platform invitation]
+    B --> C[Receive welcome email]
+    C --> D[Complete verification]
+    D --> E[First-time sign in to Kasm]
+    E --> F[Update password]
+    F --> G[Access DEDZED resources]
+```
 
 <Note>
-### Beta self-registration quick-start guide
+### Quick-start checklist
 
-1. [Complete Milestone 1](#milestone-1-register-a-dedzed-account): Register a DEDZED account
-2. [Complete Milestone 2](#milestone-2-first-time-sign-in): First time sign in
-3. [Complete Milestone 3](#milestone-3-accelerate-your-mission-access-your-dedzed-resources): Access your DEDZED resources!
+1. [Milestone 1](#milestone-1-register-a-dedzed-account) -- Register a DEDZED account
+2. [Milestone 2](#milestone-2-first-time-sign-in) -- Complete first-time sign in
+3. [Milestone 3](#milestone-3-access-your-dedzed-resources) -- Access your DEDZED resources
 </Note>
 
 ---
 
 ## Milestone 1: Register a DEDZED account
 
-### Step 1 — Use your CAC to hit the DEDZED registration page
+In this milestone, you create your DEDZED account by visiting the registration page with your CAC and completing the invitation process.
+
+### Step 1 -- Navigate to the registration page
 
 <Warning>
-Ensure your unexpired CAC is plugged in to your machine.
+Ensure your valid, unexpired CAC is plugged into your machine before proceeding.
 </Warning>
 
-- Make sure your valid CAC is plugged in to your machine.
-- Open your web browser and go to [https://dedzed.icbm.dev](https://dedzed.icbm.dev) — AWS Verified Access will redirect you to Ping Identity for authentication before connecting you to the registration page.
-  - The **Select a certificate** CAC pop-up prompt should immediately open within your browser.
-  - Select your **DOD ID CA-XX** certificate and click **OK** — this opens the **Request Platform Invitation** page. See next: [Step 2](#step-2--completing-your-platform-invitation).
+1. Open your web browser and go to [https://dedzed.icbm.dev](https://dedzed.icbm.dev). AWS Verified Access redirects you to Ping Identity for authentication.
+2. When the **Select a certificate** prompt appears, select your **DOD ID CA-XX** certificate and click **OK**.
+3. You arrive at the **Request Platform Invitation** page.
 
-### Step 2 — Completing your platform invitation
+### Step 2 -- Complete your platform invitation
 
-1. Click **REQUEST** button under **Request Platform Invitation** option on the next screen.
-2. Enter your **First name**, **Last Name**, a valid **.mil email** account and click **REGISTER**.
-3. If all the information provided is valid, you should get a **Successfully Sent Invitation!** status.
-4. Open the **Welcome to D3DZ3D Beta** email and complete your registration:
-   - **Where will I get my welcome email?** Check the **.mil** email address that you registered.
-   - **When will I get my welcome email?** It takes about two minutes to receive your Welcome to D3DZ3D Beta email.
-   - **What do I do with my welcome email?** You will use your **Welcome to D3DZ3D Beta** email to complete your account registration!
-   - **How do I complete my DEDZED account registration?** Your **Welcome to D3DZ3D Beta** email contains three important items:
-     1. **Verification link** — click "the following link" to complete verification.
-     2. **Username** — your DEDZED account username provided by your Ping login
-     3. **Password** — the password provided is temporary. You will change it during First Time Sign In.
+1. Click the **REQUEST** button under the **Request Platform Invitation** option.
+2. Enter your **First name**, **Last name**, and a valid **.mil email** address.
+3. Click **REGISTER**. If all information is valid, you see a **Successfully Sent Invitation!** confirmation.
 
-You've completed Milestone 1! Proceed to Milestone 2: First Time Sign In.
+### Step 3 -- Complete registration from your welcome email
 
----
+Check the .mil email address you registered for the **Welcome to D3DZ3D Beta** email. This email typically arrives within two minutes and contains three important items:
 
-## Milestone 2: First time sign in
-
-1. **Step 1** — Plug your valid CAC card into your machine.
-
-<Warning>
-Ensure your valid CAC is plugged in to your machine.
-</Warning>
-
-2. **Step 2** — Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev) and click the **Ping Identity** option.
-
-3. **Step 3** — Use your Username and Password from your **Welcome to D3DZ3D Beta** email:
-   - Sign in with your DEDZED account username (your Ping login)
-   - Enter the temporary password you received in your **Welcome to D3DZ3D Beta** email
-
-4. **Step 4** — Verify your identity:
-   - You should be directed to verify your identity with a smart card option: **Use a certificate or smart card**
-   - Select your **DOD ID CA-XX** certificate and click **OK**.
-
-5. **Step 5** — Update your password:
-   - Input your "current" password: this is the temporary password provided in your **Welcome to D3DZ3D Beta** email.
-   - Create a new password: use best security practices when generating a new password.
-   - Confirm your new password.
-   - Click **Sign in**.
-
-6. **Step 6** — More information required:
-   - You will be directed to a **More information required** page. Simply click **Next**.
-
-7. **Step 7** — Keep your account secure — Success!
-   - On the my-sign-in page, simply click the blue **Done** button.
-
-8. **Step 8** — You've completed account initialization. You should be automatically directed to the main Kasm console.
-
-9. **Step 9** — You've completed Milestone 2! Proceed to Milestone 3: Access Your DEDZED Resources.
-
----
-
-## Milestone 3: Accelerate your mission — Access your DEDZED resources!
-
-Now that you've completed Milestones 1 and 2 using your CAC, you can access DEDZED resources!
-
-### Step 1 — Bookmark your go-to auth method to access DEDZED resources
+| Item | Description |
+|------|-------------|
+| **Verification link** | Click "the following link" to verify your email address and activate your account. |
+| **Username** | Your DEDZED account username, provided by your Ping login. |
+| **Temporary password** | A one-time password you will change during first-time sign in. |
 
 <Tip>
-**My go-to authentication method to access DEDZED resources:**
-
-1. Connect my valid CAC card into my machine.
-2. Login to [Kasm](https://kasm.icbm.dev/).
-3. Start a Kasm VDI session.
-4. Within Kasm session, use my DEDZED account username & password authentication to access resources.
-
-*Please note that CAC passthrough does not currently work in Kasm VDI.*
+Save your username somewhere accessible. You will need it for every sign in to DEDZED resources.
 </Tip>
 
-### Step 2 — Accessing DEDZED resources within my Kasm VDI
-
-a. Start a Kasm session by clicking **SHE BASH Ubuntu** workspace, with **Persistent Profile** enabled.
-
-b. Within a Kasm session, open a browser and navigate to [DEDZED](https://dedzed.icbm.dev/).
-
-c. Sign in with **Ping Identity** and use your DEDZED username & password only. CAC passthrough does not currently work in Kasm VDI.
-
-### Step 3 — You've completed Milestone 3! You're ready to launch!
-
-- Accelerate your mission! Launch DEDZED!
-- Accelerate your DEDZED Experience (d3dX) — [submit Feedback](/support/contact)!
+After clicking the verification link, proceed to Milestone 2.
 
 ---
 
-## Exclusion list for users with CAC issues
+## Milestone 2: First-time sign in
+
+In this milestone, you sign in for the first time, verify your identity with your CAC, and set a permanent password.
 
 <Warning>
-**Only in cases where a user cannot sign in with their registered CAC.**
+Ensure your valid CAC is plugged into your machine before proceeding.
 </Warning>
 
-1. Please reach out to the SHE BASH admins at [Contact and Support](/support/contact) if you encounter issues logging in with your CAC. The SHE BASH team will work with you to try to resolve the issue, but in cases where it can't be resolved, a user can be added to the CAC exclusion list.
+1. Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev) and click the **Ping Identity** option.
+2. Enter your **Username** and **temporary password** from the welcome email.
+3. When prompted to verify your identity, select **Use a certificate or smart card**.
+4. Select your **DOD ID CA-XX** certificate and click **OK**.
+5. On the password update screen:
+   - Enter your temporary password as the current password.
+   - Create a new password following best security practices.
+   - Confirm your new password and click **Sign in**.
+6. On the **More information required** page, click **Next**.
+7. On the account security page, click the blue **Done** button.
 
-2. Once an admin has added you to the exclusion list, you can sign in to DEDZED resources without a CAC by using your DEDZED account username (your Ping login), password, and an MFA setup of your choice (you can also choose to skip MFA setup).
+You are now signed in and directed to the Kasm console. Proceed to Milestone 3.
+
+---
+
+## Milestone 3: Access your DEDZED resources
+
+Now that your account is active, you can access all DEDZED resources through the Kasm VDI.
+
+### Your standard authentication workflow
+
+Every time you access DEDZED, follow these steps:
+
+1. Plug your valid CAC into your machine.
+2. Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev) and sign in with **Ping Identity**.
+3. Start a Kasm VDI session.
+4. Within the Kasm session, use your DEDZED username and password to access resources.
+
+<Warning>
+CAC passthrough does not currently work inside Kasm VDI sessions. Use your DEDZED username and password for authentication within Kasm.
+</Warning>
+
+### Access DEDZED from within Kasm
+
+1. Start a Kasm session by clicking the **SHE BASH Ubuntu** workspace with **Persistent Profile** enabled.
+2. Open a browser within the Kasm session and navigate to [https://dedzed.icbm.dev](https://dedzed.icbm.dev).
+3. Sign in with **Ping Identity** using your DEDZED username and password.
+
+You now have access to the DEDZED Command Dashboard and can deploy ephemeral clusters, manage environments, and access all platform services.
+
+---
+
+## Troubleshooting: CAC issues
+
+<Warning>
+This section applies only to users who cannot sign in with their registered CAC.
+</Warning>
+
+If you experience issues logging in with your CAC:
+
+1. Contact the SHE BASH team through the [support page](/support/contact). The team will work with you to resolve the issue.
+2. If the issue cannot be resolved, an admin can add you to the **CAC exclusion list**.
+3. Once on the exclusion list, sign in with your DEDZED username, password, and an MFA method of your choice. You can also choose to skip MFA setup.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Deploy a cluster" icon="server" href="/getting-started/deploying-cluster">
+    Launch your first ephemeral Kubernetes cluster.
+  </Card>
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Learn how to use the Kasm VDI environment effectively.
+  </Card>
+</CardGroup>

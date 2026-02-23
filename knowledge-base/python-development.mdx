@@ -1,77 +1,138 @@
 ---
 title: "Python development"
-description: "Getting started with Python development in your DEDZED Kasm workspace"
+description: "Set up and use Python development environments in your DEDZED Kasm workspace with Anaconda"
+sidebarTitle: "Python development"
 ---
 
+## Overview
+
+DEDZED Kasm workspaces come with Anaconda (`conda`) pre-installed on both Ubuntu and Windows images. This gives you a ready-to-use Python environment with package management and virtual environment support out of the box.
+
+```mermaid
+flowchart LR
+    A["Launch Kasm"] --> B["Open terminal"]
+    B --> C["Create conda env"]
+    C --> D["Install packages"]
+    D --> E["Develop"]
+```
+
 <Tip>
-For ease, Anaconda (`conda`) is preinstalled on our [Ubuntu](#getting-started-ubuntu) and [Windows](#getting-started-windows-11) Workspace Images.
+Anaconda is pre-installed on the **SHE BASH Ubuntu** and **Windows 11** workspace images. You do not need to install it manually.
 </Tip>
+
+---
 
 ## Getting started: Ubuntu
 
-Select **SHE BASH Ubuntu** from the Kasm list of available workspace images.
-
-Once loaded, open **Terminal Emulator** either by selecting it from the Applications menu or by right clicking on the Desktop and choosing **Open Terminal Emulator Here**.
-
-Create a new, isolated Python environment using `conda`.
+1. Select **SHE BASH Ubuntu** from the Kasm workspace images.
+2. Open **Terminal Emulator** from the Applications menu, or right-click the desktop and choose **Open Terminal Emulator Here**.
+3. Create and activate a new conda environment:
 
 ```bash
-conda create --name the-thing-im-doing python=3.10
-# python=3.10 can be adjusted based on your project requirements
+# Create an isolated environment (adjust Python version as needed)
+conda create --name my-project python=3.10
 
-conda activate the-thing-im-doing
-
-# for ease use conda to install global dependencies (such as jupyter)
-conda install jupyter
-
-# make dotenv available to your python environment
-conda install -c conda-forge python-dotenv
-
-# make sure to follow the interactive prompts to install required dependencies
+# Activate the environment
+conda activate my-project
 ```
 
-### Testing with an example repository
+4. Install common development packages:
 
-For the purposes of demonstration and to leverage LLMs in your Python development we recommend getting started using the [AskSage Open Source Community](https://github.com/Ask-Sage/AskSage-Open-Source-Community.git) repo (a paid subscription to AskSage is required for API access). In your terminal window run:
+```bash
+# Jupyter for notebook support
+conda install jupyter
+
+# python-dotenv for .env file support
+conda install -c conda-forge python-dotenv
+```
+
+Follow the interactive prompts to confirm package installation.
+
+### Using VS Code
+
+You can open any project in VS Code directly from the terminal:
+
+```bash
+code /path/to/your/project
+```
+
+VS Code will prompt you to install the Python extension on first use. Once installed, you can run Jupyter Notebooks (`.ipynb` files) directly in the editor.
+
+If you open a new terminal inside VS Code (`Ctrl+~`), you need to re-activate your conda environment in that terminal session:
+
+```bash
+conda activate my-project
+```
+
+### Example: AskSage repository
+
+To test your setup with an example project that uses LLM APIs:
 
 ```bash
 git clone https://github.com/Ask-Sage/AskSage-Open-Source-Community.git
 cd AskSage-Open-Source-Community
-# open the repo in VS Code
 code .
 ```
 
-VS Code will prompt you to install the Python extension, which you should do. This will let you run the Jupyter Notebooks (`.ipynb` files) from within your VS Code editor.
-
-You can operate fully within your VS Code IDE or you can toggle between the system's terminal application and the IDE. If you want to remain entirely within VS Code, you'll have to activate the `conda` environment created earlier.
-
-From within VS Code use the keyboard shortcut `Ctrl ~` to open a new terminal.
-
-Rerun `conda activate` in this terminal session.
-
-Then install all the dependencies for the project:
+Then install the project dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+<Info>
+A paid AskSage subscription is required for API access when using this example repository.
+</Info>
+
 ---
 
 ## Getting started: Windows 11
 
-If you are using Windows 11 and would like to use Python for development activities, please use the following instructions to open an **Anaconda Prompt** in your environment:
-
-1. From the **Start** menu search for **Anaconda**.
+1. From the **Start** menu, search for **Anaconda**.
 2. Open **Anaconda Prompt**.
-3. By default, you will have a `base` environment.
-4. Create a new environment:
+3. Create and activate a new environment:
 
 ```bash
-conda create --name $ENVIRONMENT_NAME python=$PYTHON_VERSION
+conda create --name my-project python=3.10
+conda activate my-project
 ```
 
-```bash
-conda activate $ENVIRONMENT_NAME
-```
+4. Follow the on-screen prompts and press `Y` to confirm package installation.
 
-5. As that populates the requisite packages, make sure to follow the on-screen prompts (`Y`) to allow the installation of packages.
+---
+
+## Common conda commands
+
+| Command | Purpose |
+|---------|---------|
+| `conda create --name <env> python=<ver>` | Create a new environment |
+| `conda activate <env>` | Activate an environment |
+| `conda deactivate` | Deactivate the current environment |
+| `conda list` | List installed packages |
+| `conda install <package>` | Install a package |
+| `conda install -c conda-forge <package>` | Install from conda-forge |
+| `conda env list` | List all environments |
+| `conda env remove --name <env>` | Delete an environment |
+
+<Warning>
+Kasm environments are ephemeral. Save your code to a Git repository before your session expires. Conda environments and installed packages are not persisted across sessions.
+</Warning>
+
+---
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Learn how to use the Kasm browser-based desktop environment.
+  </Card>
+  <Card title="Install software" icon="download" href="/kasm-workspaces/install-software">
+    How to install additional tools in your Kasm workspace.
+  </Card>
+  <Card title="DEDZED AI" icon="robot" href="/knowledge-base/dedzed-ai">
+    Use AI-powered coding assistance in your workspace.
+  </Card>
+  <Card title="Ephemeral environments" icon="clock" href="/knowledge-base/ephemeral-environments">
+    Why DEDZED environments are temporary by design.
+  </Card>
+</CardGroup>

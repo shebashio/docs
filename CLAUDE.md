@@ -53,6 +53,14 @@ npm mint update
 - Code formatting for file names, commands, paths, and code references
 - One idea per sentence
 
+## Agents
+
+Custom Claude Code agents for this project are defined in `.claude/agents/`. See `AGENTS.md` for the full catalog and usage instructions.
+
+Available agents: `docs-writer`, `docs-reviewer`, `site-architect`, `content-auditor`, `terminology-guard`.
+
+These can be dispatched individually via the Task tool or coordinated as a team for site-wide improvement passes.
+
 ## Deployment
 
 Changes pushed to the default branch auto-deploy via the Mintlify GitHub app.

@@ -1,37 +1,119 @@
 ---
-title: "Can I install software within my DEDZED VDI?"
-description: "Options for installing and requesting software in your VDI environment"
+title: "Install software in your DEDZED VDI"
+description: "Options for installing, running, and requesting software in your Kasm VDI environment"
+sidebarTitle: "Install software"
 ---
 
-<Note>
-If you need specific software for your work that isn't available through the listed methods, please submit a request!
-</Note>
+## Overview
+
+The DEDZED VDI comes with a set of pre-installed tools for Kubernetes development, DevSecOps workflows, and general productivity. Depending on which desktop image you use, you have different options for adding software beyond what is pre-installed.
+
+```mermaid
+flowchart TD
+    A[Need software?] --> B{Pre-installed?}
+    B -->|Yes| C[Use it directly]
+    B -->|No| D{Which image?}
+    D -->|Ubuntu| E{Can install as non-root?}
+    D -->|Windows 11| F[Install with admin access]
+    E -->|Yes| G[Install via user-space tools]
+    E -->|No| H{Can run as container?}
+    H -->|Yes| I[Run via Docker]
+    H -->|No| J[Submit a software request]
+```
+
+---
 
 ## SHE BASH Ubuntu
 
-While you cannot freely install any software in the DEDZED VDI, there are some options available. Here is a list of methods:
+The Ubuntu image runs with a non-root user account. You cannot use `sudo` to install system-level packages, but you have several options for adding software.
 
-- You can run Docker containers within the VDI environment.
-- You have the ability to install software as a non-root user.
-- The environment comes with pre-installed software and tools.
-- You can request additional software to be installed. For instance, a user requested a Go compiler during our alpha testing period, which is now ready to use in Beta!
+### Pre-installed tools
+
+The Ubuntu image includes commonly used tools out of the box:
+
+- **kubectl**, **k9s**, and **Helm** for Kubernetes management
+- **Docker** for running and building containers
+- **Git** for version control
+- **Python** and common development libraries
+- **VS Code** and standard browsers
+
+### Install software as a non-root user
+
+You can install tools that do not require root access:
+
+- **pip** — install Python packages to your user directory with `pip install --user <package>`
+- **npm** — install Node.js packages locally with `npm install <package>`
+- **Binary downloads** — download pre-built binaries to `~/bin` or `~/.local/bin` and add them to your `PATH`
+- **Language-specific managers** — use tools like `rustup`, `nvm`, or `pyenv` that install to user-space directories
+
+### Run software in Docker containers
+
+If a tool requires root or system-level installation, you can run it as a Docker container instead:
+
+```bash
+# Example: run a tool available as a Docker image
+docker run --rm -it <image-name>
+```
+
+This approach works well for testing tools, running one-off commands, or working with software that has complex dependencies.
 
 ---
 
 ## Windows 11
 
-- You will have access to the same suite of pre-installed tools on your Windows 11 machine as you do on the Ubuntu image, ensuring consistency across platforms. However, one key difference is that you'll be granted administrative control on the Windows 11 environment. This elevated privilege allows you to install additional software as required by your specific needs, providing greater flexibility in customizing your workspace.
-- While we encourage you to tailor your environment to best suit your work requirements, we kindly request that you exercise this freedom responsibly. It is crucial to maintain the integrity and security of the shared infrastructure. Therefore, we strongly emphasize the importance of refraining from intentionally introducing any form of malicious code onto the systems. Additionally, we ask that you avoid any actions that could potentially disrupt or negatively impact the experience of other users sharing the DEDZED VDI environment. Your cooperation in this matter helps ensure a safe, stable, and productive working environment for all team members.
+The Windows 11 image provides the same suite of pre-installed tools as Ubuntu, ensuring consistency across platforms. The key difference is that you have **administrative access** on Windows 11, which allows you to install additional software directly.
+
+### What you can do
+
+- Install applications using standard Windows installers (`.exe`, `.msi`)
+- Use package managers like **winget** or **Chocolatey**
+- Configure development environments and IDEs
+
+### Usage guidelines
+
+<Warning>
+You are responsible for using administrative access appropriately. Do not install software that could compromise the security of the shared infrastructure or disrupt other users in the DEDZED VDI environment.
+</Warning>
 
 ---
 
+## Request additional software
+
+If you need software that is not available through the methods above, submit a request to the DEDZED team. The team evaluates requests and adds popular tools to the base images for all users.
+
+### How to submit a request
+
+<Steps>
+  <Step title="Open your VDI session">
+    Launch a Kasm workspace from [https://kasm.icbm.dev](https://kasm.icbm.dev).
+  </Step>
+  <Step title="Submit via the Feedback widget (preferred)">
+    Open TSEC within your session and use the **Feedback** widget to describe the software you need and your use case.
+  </Step>
+  <Step title="Alternative: use the Teams channel">
+    Post your software request in the Beta Teams channel with details about what you need and why.
+  </Step>
+</Steps>
+
 <Note>
-Your feedback is essential! Our team rapidly implements new features based on your needs.
+The DEDZED team actively reviews feedback and has a track record of rapid implementation. For example, the Go compiler was added to the base image after a user request during alpha testing.
 </Note>
 
-If you need specific software for your work that isn't available through these methods, it's still recommended to submit a request:
+---
 
-- **(Preferred)** Launch your VDI session, open TSEC, and submit your request via the Feedback widget.
-- Request specific software in the Beta Teams channel.
+## Related resources
 
-This allows the DEDZED team to evaluate the request and potentially add the software to the environment!
+<CardGroup cols={2}>
+  <Card title="Working within Kasm" icon="desktop" href="/kasm-workspaces/working-within-kasm">
+    Learn how to create, configure, and use your Kasm virtual desktop session.
+  </Card>
+  <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
+    Set up kubectl access to your DEDZED ephemeral Kubernetes cluster.
+  </Card>
+  <Card title="Python development" icon="python" href="/knowledge-base/python-development">
+    Get started with Python development in your Kasm workspace.
+  </Card>
+  <Card title="Contact support" icon="envelope" href="/support/contact">
+    Reach the DEDZED team for help with software or environment issues.
+  </Card>
+</CardGroup>
