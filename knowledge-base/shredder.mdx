@@ -1,0 +1,67 @@
+---
+title: "Shredder"
+description: "Unified security scanning platform with customizable quality gates"
+---
+
+## Overview
+
+Shredder is the DEDZED security scanning platform. It aggregates multiple open-source and commercial scanning engines into a single interface, giving you a unified view of vulnerabilities, license risks, and compliance issues across your artifacts. Shredder is accessible at [https://shredder.icbm.dev](https://shredder.icbm.dev) from within a [Kasm session](/kasm-workspaces/working-within-kasm).
+
+<Info>
+Shredder is an internal service and can only be reached from within an active Kasm session. See [Zero trust access](/knowledge-base/zero-trust) for details on the DEDZED network access model.
+</Info>
+
+![Shredder Dashboard](/images/shredder-dashboard.png)
+
+## Scanning engines
+
+Shredder integrates the following tools to provide comprehensive coverage across scan types:
+
+| Engine | Purpose |
+|---|---|
+| **Grype** | Software composition analysis (SCA) — identifies known vulnerabilities in dependencies |
+| **Trivy** | Container image and filesystem scanning for CVEs, misconfigurations, and secrets |
+| **Semgrep** | Static application security testing (SAST) — pattern-based source code analysis |
+| **SonarQube** | Code quality and security analysis with language-specific rulesets |
+| **Ghidra** | Binary analysis and reverse engineering for compiled artifacts |
+| **Syft** | Software bill of materials (SBOM) generation for containers and filesystems |
+| **Dependency-Track** | Continuous SBOM analysis and vulnerability monitoring across the software supply chain |
+| **Chainloop** | Software supply chain attestation and evidence collection |
+
+## Quality gates
+
+Shredder allows you to define custom pass/fail criteria that form **quality gates** for scanned artifacts. Gates evaluate scan results against your defined thresholds and determine whether an artifact is approved or blocked.
+
+Different environments can enforce different gates. For example:
+
+- A **development** environment may allow artifacts with known CVEs to pass, enabling rapid iteration without blocking builds on every finding.
+- A **production** environment may enforce strict limits on CVE count, severity thresholds, or license types — blocking any artifact that does not meet compliance requirements.
+
+This gives teams the flexibility to shift security left without slowing down development, while still enforcing hard requirements before production deployment.
+
+## Attestation and CBOM
+
+Shredder generates a cryptographic bill of materials (CBOM) for cryptographic asset findings discovered during scans. All scan outputs are attached to a Chainloop attestation, providing a verifiable record of what was scanned, what was found, and what cryptographic assets are in use across your artifacts.
+
+## AI summary
+
+Shredder uses a large language model to review completed scans and generate a report summarizing findings. The AI report highlights key vulnerabilities, prioritizes them by risk, and provides actionable remediation guidance — giving you a readable overview without manually triaging every finding.
+
+## AI Inspect
+
+For deeper analysis, Shredder offers **AI Inspect** — a web service that spawns a Claude Code container with a web interface to examine scanned code more closely. You provide your own Anthropic API key, and Shredder launches an interactive Claude Code session against the codebase so you can investigate findings, trace vulnerabilities to their root cause, and generate fixes.
+
+<Warning>
+AI Inspect requires your own Anthropic API key. Usage costs are billed to your account.
+</Warning>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="DEDZED AI" icon="robot" href="/knowledge-base/dedzed-ai">
+    AI-powered vulnerability analysis and remediation guidance.
+  </Card>
+  <Card title="Zero trust access" icon="shield" href="/knowledge-base/zero-trust">
+    How DEDZED secures access to platform services.
+  </Card>
+</CardGroup>
