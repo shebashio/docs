@@ -15,27 +15,42 @@ When you navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev), the followi
 
 1. **AWS Verified Access** intercepts the request and redirects you to **Ping Identity**, the DEDZED identity provider.
 2. Ping Identity authenticates your identity and evaluates your authorization.
-3. After successful authentication, Verified Access grants access and connects you to the **Kasm VDI**.
-4. From within your Kasm session, you can reach internal services such as **DEDZED Command Dashboard** (`dedzed.icbm.dev`), **Shredder** (`shredder.icbm.dev`), and other platform tools.
+3. After successful authentication, Verified Access grants access and connects you to the **Kasm VDI** web interface.
+4. When you launch a workspace, your browser opens a websocket connection to the Kasm session service through a **public load balancer** — this leg does not pass through Verified Access (see [Current limitations](#current-limitations) below).
+5. From within your Kasm session, you can reach internal services such as **DEDZED Command Dashboard** (`dedzed.icbm.dev`), **Shredder** (`shredder.icbm.dev`), and other platform tools.
 
 ```mermaid
 flowchart TD
     User([You]) -->|Navigate to kasm.icbm.dev| VA[AWS Verified Access]
     VA -->|Redirect for authentication| Ping[Ping Identity]
     Ping -->|Authenticated| VA
-    VA -->|Access granted| Kasm[Kasm VDI Session]
+    VA -->|Access granted| KasmUI[Kasm Web Interface]
 
-    Kasm -->|Internal access| CD[DEDZED Command Dashboard]
-    Kasm -->|Internal access| Shredder[Shredder]
-    Kasm -->|Internal access| Other[Other Platform Services]
+    KasmUI -->|Launch workspace| PLB[Public Load Balancer]
+    PLB -->|Websocket session| KasmWS[Kasm Workspace Session]
+
+    KasmWS -->|Internal access| CD[DEDZED Command Dashboard]
+    KasmWS -->|Internal access| Shredder[Shredder]
+    KasmWS -->|Internal access| Other[Other Platform Services]
 
     Outside([Direct Access]) -.->|Blocked| CD
     Outside -.->|Blocked| Shredder
+
+    style PLB stroke:#f59e0b,stroke-width:2px
+    style VA stroke:#16a34a,stroke-width:2px
 ```
 
 <Info>
 Kasm is the jumping-off point for all DEDZED services. You must be in an active Kasm session to access internal tools like Command Dashboard and Shredder. Direct navigation to these services from outside Kasm will not work.
 </Info>
+
+## Current limitations
+
+The access path has a split routing model. Initial authentication to `kasm.icbm.dev` is fully protected by AWS Verified Access, but once you launch a Kasm workspace, the desktop session connects over a websocket through a public load balancer. This websocket connection is not covered by Verified Access.
+
+<Warning>
+AWS Verified Access does not currently support TCP endpoints in GovCloud. Until that capability is available, the Kasm workspace websocket session routes through a public load balancer rather than through Verified Access. A future mitigation using JIT provisioning with Lambda is under consideration but has not been tested.
+</Warning>
 
 ## Why zero trust?
 
