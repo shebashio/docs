@@ -16,7 +16,7 @@ When you navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev), the followi
 1. **AWS Verified Access** intercepts the request and redirects you to **Ping Identity**, the DEDZED identity provider.
 2. Ping Identity authenticates your identity and evaluates your authorization.
 3. After successful authentication, Verified Access grants access and connects you to the **Kasm VDI** web interface.
-4. When you launch a workspace, your browser opens a websocket connection to the Kasm session service through a **public load balancer** — this leg does not pass through Verified Access (see [Current limitations](#current-limitations) below).
+4. When you launch a workspace, your browser opens a websocket connection to the Kasm session service through an **AWS WAF** and **public load balancer** — this leg does not pass through Verified Access (see [Current limitations](#current-limitations) below). The WAF provides rate limiting, bot protection, and request filtering on this exposed path.
 5. From within your Kasm session, you can reach internal services such as **DEDZED Command Dashboard** (`dedzed.icbm.dev`), **Shredder** (`shredder.icbm.dev`), and other platform tools.
 
 ```mermaid
@@ -26,7 +26,8 @@ flowchart TD
     Ping -->|Authenticated| VA
     VA -->|Access granted| KasmUI[Kasm Web Interface]
 
-    KasmUI -->|Launch workspace| PLB[Public Load Balancer]
+    KasmUI -->|Launch workspace| WAF[AWS WAF]
+    WAF -->|Filtered traffic| PLB[Public Load Balancer]
     PLB -->|Websocket session| KasmWS[Kasm Workspace Session]
 
     KasmWS -->|Internal access| CD[DEDZED Command Dashboard]
@@ -38,6 +39,7 @@ flowchart TD
 
     style PLB stroke:#f59e0b,stroke-width:2px
     style VA stroke:#16a34a,stroke-width:2px
+    style WAF stroke:#3b82f6,stroke-width:2px
 ```
 
 <Info>
@@ -46,7 +48,7 @@ Kasm is the jumping-off point for all DEDZED services. You must be in an active 
 
 ## Current limitations
 
-The access path has a split routing model. Initial authentication to `kasm.icbm.dev` is fully protected by AWS Verified Access, but once you launch a Kasm workspace, the desktop session connects over a websocket through a public load balancer. This websocket connection is not covered by Verified Access.
+The access path has a split routing model. Initial authentication to `kasm.icbm.dev` is fully protected by AWS Verified Access, but once you launch a Kasm workspace, the desktop session connects over a websocket through a public load balancer. This websocket connection is not covered by Verified Access. An AWS WAF sits in front of the public load balancer to mitigate this exposure with rate limiting, IP reputation filtering, and managed rule sets.
 
 <Warning>
 AWS Verified Access does not currently support TCP endpoints in GovCloud. Until that capability is available, the Kasm workspace websocket session routes through a public load balancer rather than through Verified Access. A future mitigation using JIT provisioning with Lambda is under consideration but has not been tested.
