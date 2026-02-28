@@ -36,10 +36,13 @@ flowchart TB
         K8S --- BB
     end
 
-    subgraph Security["Security"]
+    subgraph Security["Security and compliance"]
         SHRED["Shredder"]
         SBOM["SBOM + Attestation"]
+        STIG["STIGMATE"]
+        RMF["RMF"]
         SHRED --- SBOM
+        STIG --- RMF
     end
 
     Browser --> AVA
@@ -73,6 +76,18 @@ All access to DEDZED services is mediated by [AWS Verified Access](/knowledge-ba
 
 [DEDZED AI](/knowledge-base/dedzed-ai) brings agentic AI capabilities across the platform — from coding assistance in your Kasm workspace to automated operations in the DEDZED Command Dashboard and vulnerability analysis in Shredder.
 
+### STIG compliance automation
+
+[STIGMATE](/stigmate/index) automates Security Technical Implementation Guide (STIG) compliance scanning using Claude AI agents. It evaluates infrastructure against 395+ STIGs in real time, with results displayed on a live kanban dashboard and exportable as CKL checklists for STIG Viewer.
+
+### Risk Management Framework
+
+[RMF](/rmf/index) provides a comprehensive system for managing DoD Authority to Operate (ATO) processes. It tracks NIST 800-53 Rev 5 controls, manages evidence with approval workflows, and integrates with AI through the Model Context Protocol (MCP) for compliance assistance.
+
+### Operator coordination
+
+[Operator State Lock](/operator-state-lock/index) provides Terraform-style state locking for multi-operator environments. It prevents concurrent infrastructure modifications, maintains an append-only change log, and captures lessons learned to prevent repeated mistakes across operators and sessions.
+
 ### GitOps integration
 
 DEDZED supports GitOps-driven deployment workflows across AWS and Azure Government environments. Application configurations are stored in Git, and changes are automatically reconciled to the target cluster.
@@ -96,6 +111,9 @@ DEDZED is built for software development teams working in regulated and high-sec
 | Identity | Ping Identity | Authentication and single sign-on |
 | Network | AWS Verified Access | Zero trust access without VPN |
 | Security | Shredder | Multi-engine vulnerability scanning and attestation |
+| Compliance | STIGMATE | AI-powered STIG compliance scanning and CKL export |
+| Governance | RMF | NIST 800-53 control tracking and ATO workflow management |
+| Operations | Operator State Lock | Multi-operator infrastructure coordination and change logging |
 | AI | DEDZED AI | Agentic coding, operations, and analysis |
 | Cloud | AWS / Azure GovCloud | IL5-authorized cloud infrastructure |
 
@@ -113,5 +131,11 @@ DEDZED is built for software development teams working in regulated and high-sec
   </Card>
   <Card title="Shredder" icon="shield-halved" href="/knowledge-base/shredder">
     Unified security scanning with quality gates.
+  </Card>
+  <Card title="STIGMATE" icon="clipboard-check" href="/stigmate/index">
+    AI-powered STIG compliance scanning.
+  </Card>
+  <Card title="RMF" icon="scale-balanced" href="/rmf/index">
+    Risk Management Framework and ATO workflow.
   </Card>
 </CardGroup>

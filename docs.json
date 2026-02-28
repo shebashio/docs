@@ -53,6 +53,84 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "STIGMATE",
+        "groups": [
+          {
+            "group": "STIGMATE",
+            "pages": [
+              "stigmate/index",
+              "stigmate/concepts",
+              "stigmate/getting-started"
+            ]
+          },
+          {
+            "group": "Usage",
+            "pages": [
+              "stigmate/scanning",
+              "stigmate/dashboard",
+              "stigmate/ckl-export"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "stigmate/api-reference",
+              "stigmate/deployment"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "RMF",
+        "groups": [
+          {
+            "group": "RMF",
+            "pages": [
+              "rmf/index",
+              "rmf/concepts",
+              "rmf/getting-started"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "rmf/projects",
+              "rmf/controls",
+              "rmf/evidence"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "rmf/roles-and-permissions",
+              "rmf/api-reference",
+              "rmf/mcp-integration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Operator State Lock",
+        "groups": [
+          {
+            "group": "Operator State Lock",
+            "pages": [
+              "operator-state-lock/index",
+              "operator-state-lock/concepts",
+              "operator-state-lock/getting-started"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "operator-state-lock/commands",
+              "operator-state-lock/aws-configuration",
+              "operator-state-lock/lessons-learned"
+            ]
+          }
+        ]
       }
     ],
     "global": {
@@ -66,6 +144,16 @@
           "anchor": "Kasm VDI",
           "href": "https://kasm.icbm.dev",
           "icon": "desktop"
+        },
+        {
+          "anchor": "STIGMATE",
+          "href": "https://stigmate.icbm.dev",
+          "icon": "clipboard-check"
+        },
+        {
+          "anchor": "RMF",
+          "href": "https://rmf.icbm.dev",
+          "icon": "scale-balanced"
         }
       ]
     }

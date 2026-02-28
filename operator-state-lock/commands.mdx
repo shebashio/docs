@@ -1,0 +1,451 @@
+---
+title: "CLI reference"
+description: "Complete reference for all 11 Operator State Lock CLI commands with flags, examples, and usage notes"
+sidebarTitle: "CLI reference"
+---
+
+## Overview
+
+Operator State Lock provides 11 CLI commands for managing environment locks, recording changes, and capturing lessons learned. All commands use the `osl` binary.
+
+```bash
+osl <command> [flags]
+```
+
+---
+
+## init
+
+Bootstrap the S3 bucket directory structure for a new environment.
+
+```bash
+osl init --env <environment>
+```
+
+### Flags
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--env` | string | Yes | Target environment (`management` or `production`) |
+
+### Example
+
+```bash
+osl init --env management
+```
+
+### Notes
+
+- Creates the `environments/`, `global/`, and `config.json` prefixes in the S3 bucket
+- Safe to run multiple times — skips creation if the structure already exists
+- You only need to run this once per bucket
+
+---
+
+## whoami
+
+Display the current operator identity resolved from AWS STS.
+
+```bash
+osl whoami
+```
+
+### Flags
+
+None.
+
+### Example
+
+```bash
+osl whoami
+```
+
+```
+Operator: jane.smith
+ARN:      arn:aws-us-gov:iam::128816533700:user/jane.smith
+Account:  128816533700
+```
+
+### Notes
+
+- Calls `sts:GetCallerIdentity` to resolve your IAM identity
+- Automatically registers you in the `global/operators.json` registry
+- Use this to verify your credentials before starting work
+
+---
+
+## lock
+
+Acquire an exclusive lock on an environment.
+
+```bash
+osl lock --env <environment> --purpose <description> [--ttl <seconds>]
+```
+
+### Flags
+
+| Flag | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `--env` | string | Yes | — | Target environment |
+| `--purpose` | string | Yes | — | Free-text description of intended work |
+| `--ttl` | integer | No | `300` | Lock time-to-live in seconds |
+
+### Example
+
+```bash
+osl lock --env management --purpose "Updating Istio Helm values"
+```
+
+```
+Lock acquired successfully.
+  Lock ID:     lock_f5e4d3c2
+  Environment: management
+  TTL:         300s
+  Heartbeat:   started (PID 12345)
+```
+
+### Notes
+
+- Fails if the environment is already locked by another operator
+- Spawns a background heartbeat subprocess that refreshes the TTL every 60 seconds
+- The heartbeat PID is displayed so you can verify it is running
+- The `--purpose` flag is required to provide context for other operators
+
+---
+
+## unlock
+
+Release your lock on an environment.
+
+```bash
+osl unlock --env <environment>
+```
+
+### Flags
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--env` | string | Yes | Target environment |
+
+### Example
+
+```bash
+osl unlock --env management
+```
+
+```
+Lock released successfully.
+  Lock ID:   lock_f5e4d3c2
+  Duration:  12m34s
+  Heartbeat: stopped (PID 12345)
+```
+
+### Notes
+
+- Only the lock holder can release the lock
+- Automatically kills the background heartbeat subprocess
+- Displays the total duration the lock was held
+- Always record your changes before unlocking
+
+---
+
+## status
+
+Check the current lock status for an environment.
+
+```bash
+osl status --env <environment>
+```
+
+### Flags
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--env` | string | Yes | Target environment |
+
+### Example (locked)
+
+```bash
+osl status --env management
+```
+
+```
+Environment: management
+Status:      LOCKED
+Operator:    jane.smith
+Purpose:     Updating Istio Helm values
+Since:       2025-03-15T14:30:00Z
+TTL:         300s
+Heartbeat:   active (last seen 45s ago)
+```
+
+### Example (available)
+
+```bash
+osl status --env production
+```
+
+```
+Environment: production
+Status:      AVAILABLE
+```
+
+### Notes
+
+- Shows whether the lock is active, stale, or available
+- Displays heartbeat status so you can determine if a lock is stale
+- A lock is considered stale if no heartbeat has been received for 2x TTL (default: 10 minutes)
+
+---
+
+## record
+
+Log an infrastructure change to the append-only change log.
+
+```bash
+osl record --env <environment> \
+  --action <short-description> \
+  --description <detailed-description> \
+  [--files <comma-separated-files>] \
+  [--tags <comma-separated-tags>] \
+  [--status <success|failed>]
+```
+
+### Flags
+
+| Flag | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `--env` | string | Yes | — | Target environment |
+| `--action` | string | Yes | — | Short description of the action taken |
+| `--description` | string | Yes | — | Detailed description of the change |
+| `--files` | string | No | — | Comma-separated list of files or resources modified |
+| `--tags` | string | No | — | Comma-separated categorization tags |
+| `--status` | string | No | `success` | Change outcome: `success` or `failed` |
+
+### Example
+
+```bash
+osl record --env management \
+  --action "Updated Big Bang Helm values" \
+  --description "Bumped Istio to 1.20.3 for CVE-2024-1234 fix" \
+  --files "bigbang/values.yaml" \
+  --tags "bigbang,istio,cve" \
+  --status success
+```
+
+### Notes
+
+- You must hold the lock to record a change
+- Always record failed changes with `--status failed` — future operators need to know what did not work
+- The `--tags` flag enables filtering with `osl changes --tags`
+- Each record is automatically linked to your current lock ID
+
+---
+
+## changes
+
+Read recent changes from the change log.
+
+```bash
+osl changes --env <environment> [--last <count>] [--tags <comma-separated-tags>]
+```
+
+### Flags
+
+| Flag | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `--env` | string | Yes | — | Target environment |
+| `--last` | integer | No | `10` | Number of recent entries to display |
+| `--tags` | string | No | — | Filter by comma-separated tags |
+
+### Example
+
+```bash
+osl changes --env management --last 5 --tags istio
+```
+
+```
+[2025-03-15T14:30:00Z] jane.smith (success)
+  Action: Updated Big Bang Helm values
+  Description: Bumped Istio to 1.20.3 for CVE-2024-1234 fix
+  Files: bigbang/values.yaml
+  Tags: bigbang, istio, cve
+```
+
+### Notes
+
+- Always review changes before acquiring a lock
+- Use `--tags` to filter for changes relevant to your planned work
+- Change entries are displayed in reverse chronological order
+
+---
+
+## learn
+
+Add a lesson learned to the knowledge base.
+
+```bash
+osl learn --env <environment> \
+  --lesson <lesson-text> \
+  [--tags <comma-separated-tags>] \
+  [--severity <info|high|critical>] \
+  [--global]
+```
+
+### Flags
+
+| Flag | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `--env` | string | Yes | — | Target environment |
+| `--lesson` | string | Yes | — | The lesson text |
+| `--tags` | string | No | — | Comma-separated categorization tags |
+| `--severity` | string | No | `info` | Severity level: `info`, `high`, or `critical` |
+| `--global` | boolean | No | `false` | Store in global lessons instead of environment-specific |
+
+### Example
+
+```bash
+osl learn --env management \
+  --lesson "Istio upgrade requires gateway restart after Helm sync" \
+  --tags "istio,upgrade,gateway" \
+  --severity high
+```
+
+### Notes
+
+- Use `--global` for lessons that apply across all environments
+- See [Lessons learned](/operator-state-lock/lessons-learned) for severity level guidelines and best practices
+- Related change IDs are automatically linked if you hold a lock when recording the lesson
+
+---
+
+## lessons
+
+Query the lessons learned knowledge base.
+
+```bash
+osl lessons --env <environment> [--tags <comma-separated-tags>] [--severity <level>] [--global]
+```
+
+### Flags
+
+| Flag | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `--env` | string | Yes | — | Target environment |
+| `--tags` | string | No | — | Filter by comma-separated tags |
+| `--severity` | string | No | — | Filter by severity: `info`, `high`, or `critical` |
+| `--global` | boolean | No | `false` | Query global lessons instead of environment-specific |
+
+### Example
+
+```bash
+osl lessons --env management --tags istio --severity high
+```
+
+```
+[HIGH] Istio upgrade requires gateway restart after Helm sync
+  Tags: istio, upgrade, gateway
+  Related: chg_a1b2c3d4
+```
+
+### Notes
+
+- Always read lessons before acquiring a lock
+- Use `--severity critical` to see must-know information first
+- Combine `--tags` and `--severity` to narrow results for your specific task
+
+---
+
+## force-unlock
+
+Force-release a stale lock on an environment.
+
+```bash
+osl force-unlock --env <environment>
+```
+
+### Flags
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--env` | string | Yes | Target environment |
+
+### Example
+
+```bash
+osl force-unlock --env management
+```
+
+```
+Force-unlock requested for environment "management".
+  Previous holder: john.doe
+  Lock acquired:   2025-03-15T14:30:00Z
+  Last heartbeat:  2025-03-15T14:35:00Z (15m ago)
+
+Lock forcefully released. Previous holder's changes may be incomplete.
+```
+
+<Warning>
+Only use `force-unlock` when a lock is confirmed stale (no heartbeat for 2x TTL). Never force-acquire a lock from an active operator. Doing so can cause conflicting infrastructure changes and potential outages. Always check `osl status` first and attempt to contact the lock holder before force-unlocking.
+</Warning>
+
+### Notes
+
+- Prompts for confirmation before releasing the lock
+- Records the force-unlock event in the change log for audit purposes
+- The previous lock holder's changes may be incomplete — review the change log carefully after force-unlocking
+
+---
+
+## heartbeat
+
+Check or refresh the heartbeat for your current lock.
+
+```bash
+osl heartbeat --env <environment>
+```
+
+### Flags
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--env` | string | Yes | Target environment |
+
+### Example
+
+```bash
+osl heartbeat --env management
+```
+
+```
+Heartbeat status:
+  Lock ID:        lock_f5e4d3c2
+  Last heartbeat: 2025-03-15T14:45:00Z (12s ago)
+  TTL remaining:  288s
+  Process:        running (PID 12345)
+```
+
+### Notes
+
+- The heartbeat subprocess runs automatically — you normally do not need to interact with it directly
+- Use this command to troubleshoot if you suspect the heartbeat has stopped
+- The heartbeat process sends a signal to S3 every 60 seconds
+
+---
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Getting started" icon="rocket" href="/operator-state-lock/getting-started">
+    Step-by-step walkthrough of your first lock cycle.
+  </Card>
+  <Card title="Concepts" icon="lightbulb" href="/operator-state-lock/concepts">
+    State locking theory, change tracking, and heartbeat mechanism.
+  </Card>
+  <Card title="AWS configuration" icon="cloud" href="/operator-state-lock/aws-configuration">
+    IAM policies and cross-account roles for GovCloud.
+  </Card>
+  <Card title="Lessons learned" icon="graduation-cap" href="/operator-state-lock/lessons-learned">
+    Best practices for writing and querying operational lessons.
+  </Card>
+</CardGroup>

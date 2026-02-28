@@ -1,0 +1,221 @@
+---
+title: "MCP integration"
+description: "Connect AI tools to RMF through the Model Context Protocol server for compliance assistance"
+sidebarTitle: "MCP integration"
+---
+
+## Overview
+
+RMF includes a Model Context Protocol (MCP) server that enables AI-powered compliance assistance. The MCP server runs on port 8001 alongside the main API and exposes tools that AI clients (such as Claude Desktop) can use to analyze your ATO data, identify evidence gaps, suggest control implementations, and generate policy documents.
+
+<Info>
+The MCP server reads data from your RMF instance but does not make changes. All suggestions and generated content must be reviewed and applied by an authorized user.
+</Info>
+
+## Available tools
+
+The MCP server exposes the following tools to connected AI clients:
+
+| Tool | Description | Inputs |
+|------|-------------|--------|
+| `analyze_evidence_gaps` | Identifies controls that lack sufficient evidence and prioritizes them by risk | Project ID |
+| `suggest_implementations` | Generates implementation statement drafts for controls based on your system context | Project ID, control ID |
+| `generate_policies` | Creates policy document drafts mapped to control families | Project ID, control family |
+
+### analyze_evidence_gaps
+
+This tool examines all controls in a project and identifies where evidence is missing, insufficient, or expired. It returns a prioritized list of gaps with recommendations for what evidence to collect.
+
+**Example output:**
+
+```
+Evidence Gap Analysis for "Mission App ATO"
+
+High Priority (controls with no evidence):
+- AC-2: Account Management — No evidence linked. Recommend: account provisioning screenshots,
+  access review reports, or STIGMATE CKL with AC-related findings.
+- AU-2: Event Logging — No evidence linked. Recommend: logging configuration exports,
+  sample audit logs, or SIEM dashboard screenshots.
+
+Medium Priority (controls with partial evidence):
+- CM-6: Configuration Settings — 1 of 3 expected artifacts. Missing: baseline comparison
+  report and hardening guide acknowledgment.
+
+Summary: 12 controls with no evidence, 8 controls with partial evidence,
+305 controls fully evidenced.
+```
+
+### suggest_implementations
+
+This tool generates draft implementation statements for a specific control. It considers the system description, impact level, and any existing implementation data to produce relevant, specific language.
+
+**Example output for AC-2:**
+
+```
+Suggested Implementation Statement for AC-2 (Account Management):
+
+The Mission Application uses Ping Identity as the centralized identity provider for all
+user account management. Account provisioning follows a documented request-and-approval
+workflow:
+
+1. Users submit an access request through the DEDZED Command Dashboard
+2. The Program Manager (PM) reviews and approves the request
+3. The ISSM verifies the appropriate role assignment
+4. Ping Identity provisions the account with the approved role
+5. Account reviews are conducted quarterly by the ISSM
+
+Privileged accounts are limited to PM and ISSM roles and require multi-factor
+authentication. Accounts inactive for 30 days are automatically disabled.
+```
+
+### generate_policies
+
+This tool creates draft policy documents mapped to a specific NIST 800-53 control family. The generated policy includes purpose, scope, roles, procedures, and enforcement sections.
+
+## Connect Claude Desktop
+
+To connect Claude Desktop to the RMF MCP server, add the server configuration to your Claude Desktop settings.
+
+### 1. Locate the configuration file
+
+The Claude Desktop configuration file is located at:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+### 2. Add the MCP server
+
+Add the RMF MCP server to the `mcpServers` section:
+
+```json
+{
+  "mcpServers": {
+    "rmf": {
+      "url": "https://rmf.icbm.dev:8001/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_TOKEN"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+The API token must have at least `read` scope. Generate a token from the RMF UI or API — see [API reference](/rmf/api-reference) for instructions.
+</Warning>
+
+### 3. Restart Claude Desktop
+
+After saving the configuration, restart Claude Desktop. You should see the RMF tools appear in the tool list when you start a new conversation.
+
+### 4. Verify the connection
+
+Ask Claude to use one of the RMF tools:
+
+```
+Can you analyze the evidence gaps for my Mission App ATO project?
+```
+
+Claude will call the `analyze_evidence_gaps` tool and return a summary of controls that need additional evidence.
+
+## Example interactions
+
+Here are practical examples of how to use the MCP integration for compliance work.
+
+### Find evidence gaps before an assessment
+
+```
+User: We have an SCA assessment next week for project "Mission App ATO".
+      What evidence gaps should we address first?
+
+Claude: [calls analyze_evidence_gaps]
+
+I found 12 controls with no evidence and 8 with partial coverage.
+The highest priority gaps are:
+
+1. AC-2 (Account Management) — No evidence. You should upload account
+   provisioning documentation or a STIGMATE scan covering AC-related STIGs.
+2. AU-2 (Event Logging) — No evidence. Export your logging configuration
+   and attach sample audit logs.
+3. CM-6 (Configuration Settings) — Missing 2 of 3 expected artifacts.
+
+Want me to suggest implementation statements for any of these controls?
+```
+
+### Draft an implementation statement
+
+```
+User: Yes, draft an implementation statement for AU-2.
+
+Claude: [calls suggest_implementations with control_id="AU-2"]
+
+Here's a draft implementation statement for AU-2 (Event Logging):
+
+"The system uses centralized logging through [your SIEM solution] to capture
+auditable events as defined in AU-2a. The following event types are logged:
+- Authentication successes and failures
+- Privilege escalation
+- System configuration changes
+- Data access and modifications
+
+Logs are forwarded in real-time to the centralized log aggregator and retained
+for 365 days per organizational policy. Log integrity is protected through..."
+
+You can review and edit this statement before saving it to the control in RMF.
+```
+
+### Generate a policy document
+
+```
+User: Generate an access control policy for our project.
+
+Claude: [calls generate_policies with control_family="AC"]
+
+Here's a draft Access Control Policy covering the AC family:
+
+ACCESS CONTROL POLICY
+Version: 1.0
+Effective Date: [DATE]
+
+1. PURPOSE
+This policy establishes access control requirements for the Mission Application
+in accordance with NIST 800-53 Rev 5, Access Control (AC) family.
+
+2. SCOPE
+This policy applies to all users, administrators, and service accounts
+that access the Mission Application...
+
+Would you like me to refine any section or generate policies for additional
+control families?
+```
+
+## Security considerations
+
+The MCP server operates under the same authentication and authorization framework as the main RMF API:
+
+- All MCP requests require a valid API token with appropriate scopes
+- The MCP server inherits the user's role-based permissions — it can only access projects the user is authorized to view
+- Generated content is advisory only and does not modify any data in RMF
+- All MCP interactions are logged in the activity trail
+
+<Tip>
+Use the MCP integration to accelerate your ATO process, but always have qualified security personnel review AI-generated implementation statements, policies, and gap analyses before including them in your authorization package.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="API reference" icon="code" href="/rmf/api-reference">
+    Generate API tokens for MCP server authentication.
+  </Card>
+  <Card title="Controls" icon="list-check" href="/rmf/controls">
+    Manage NIST 800-53 controls and implementation statements.
+  </Card>
+  <Card title="DEDZED AI" icon="robot" href="/knowledge-base/dedzed-ai">
+    Learn about AI capabilities across the DEDZED platform.
+  </Card>
+  <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
+    Upload evidence identified through gap analysis.
+  </Card>
+</CardGroup>

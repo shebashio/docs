@@ -1,0 +1,150 @@
+---
+title: "Getting started with STIGMATE"
+description: "Deploy STIGMATE with Docker Compose and run your first automated STIG compliance scan"
+sidebarTitle: "Getting started"
+---
+
+## Prerequisites
+
+Before deploying STIGMATE, verify you have the following:
+
+| Requirement | Details |
+|-------------|---------|
+| **Docker** | Docker Engine 24+ with Docker Compose v2 |
+| **Anthropic API key** | A valid API key with access to Claude models |
+| **AWS credentials** | IAM credentials with SSM permissions in your target region |
+| **Target hosts** | EC2 instances with SSM agent installed and IAM instance profiles configured |
+| **PostgreSQL** | Included in the Docker Compose stack (no external database required) |
+
+<Warning>
+STIGMATE requires access to AWS Systems Manager in your target region. Ensure your IAM credentials have `ssm:SendCommand`, `ssm:GetCommandInvocation`, and `ssm:DescribeInstanceInformation` permissions.
+</Warning>
+
+## Deploy with Docker Compose
+
+STIGMATE ships as a Docker Compose stack with three services: the Go backend, the Vue.js dashboard, and PostgreSQL. All images use Chainguard hardened base images running as non-root user `65532`.
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/shebashio/stigmate.git
+    cd stigmate
+    ```
+  </Step>
+
+  <Step title="Configure environment variables">
+    Copy the example environment file and update it with your credentials:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Edit `.env` and set the required values. See the [environment variables](#environment-variables) table below for all options.
+  </Step>
+
+  <Step title="Start the stack">
+    ```bash
+    docker compose up -d
+    ```
+
+    The dashboard is available at `http://localhost:3333` once all services are healthy.
+  </Step>
+
+  <Step title="Verify the deployment">
+    Check that all services are running:
+
+    ```bash
+    docker compose ps
+    ```
+
+    You should see three healthy containers: `stigmate-api`, `stigmate-dashboard`, and `stigmate-db`.
+  </Step>
+</Steps>
+
+## Environment variables
+
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| `PORT` | `3333` | No | Port the API server listens on |
+| `DB_HOST` | `localhost` | Yes | PostgreSQL hostname |
+| `DB_NAME` | `stigmate` | Yes | PostgreSQL database name |
+| `DB_USER` | `stigmate` | Yes | PostgreSQL username |
+| `DB_PASSWORD` | — | Yes | PostgreSQL password |
+| `AWS_REGION` | `us-gov-west-1` | Yes | AWS region for SSM commands |
+| `ANTHROPIC_API_KEY` | — | Yes | Anthropic API key for Claude agents |
+| `MAX_CONCURRENT_AGENTS` | `5` | No | Maximum number of parallel Claude agents during a scan |
+| `AGENT_SPAWN_DELAY` | `200` | No | Delay in milliseconds between spawning agents (prevents API rate limiting) |
+| `STIGS_DIR` | `./stigs` | No | Path to the directory containing XCCDF benchmark files |
+| `LOG_LEVEL` | `info` | No | Logging verbosity: `debug`, `info`, `warn`, `error` |
+
+<Tip>
+Start with `MAX_CONCURRENT_AGENTS=3` for your first scan. You can increase this once you confirm your Anthropic API rate limits support higher concurrency.
+</Tip>
+
+## Run your first scan
+
+Once STIGMATE is deployed, follow these steps to run your first compliance scan.
+
+<Steps>
+  <Step title="Sync your AWS assets">
+    Open the STIGMATE dashboard at `http://localhost:3333`. Click **Sync Assets** to pull your EC2 instance inventory from AWS Systems Manager. STIGMATE discovers all instances with the SSM agent online in your configured region.
+  </Step>
+
+  <Step title="Select a target host">
+    The asset list shows each instance with its hostname, instance ID, operating system, and SSM connection status. Select the host you want to scan.
+  </Step>
+
+  <Step title="Verify OS detection">
+    STIGMATE runs `cat /etc/os-release` on the target host via SSM to identify the operating system and version. Confirm the detected OS matches your expectations. The system uses this information to select the correct STIG benchmark.
+  </Step>
+
+  <Step title="Start the scan">
+    Click **Start Scan**. STIGMATE selects the matching STIG from the library, parses its XCCDF rules, and begins distributing checks to the Claude agent pool.
+
+    The dashboard switches to the kanban view where you can watch results stream in as each agent completes its evaluation.
+  </Step>
+
+  <Step title="Review results">
+    Results appear in four columns on the kanban board:
+
+    - **Running** — checks currently being evaluated by an agent
+    - **Open** — non-compliant findings that require remediation
+    - **NF** — compliant checks (Not a Finding)
+    - **NA** — checks that do not apply to this system
+
+    Click any result card to see the finding detail, including the commands the agent ran and its compliance reasoning.
+  </Step>
+
+  <Step title="Export the CKL">
+    When the scan completes, click **Export CKL** to download a STIG Viewer-compatible checklist file. You can import this file into STIG Viewer for review or submit it as evidence in your RMF package.
+  </Step>
+</Steps>
+
+<Info>
+A typical STIG scan with 200+ rules takes 10-15 minutes with `MAX_CONCURRENT_AGENTS=5`. Larger STIGs or lower concurrency settings will take longer.
+</Info>
+
+## Next steps
+
+After your first scan, explore these topics:
+
+- Learn about the [STIG library and PPSM context injection](/stigmate/scanning) to improve scan accuracy
+- Understand the [dashboard](/stigmate/dashboard) kanban board and WebSocket updates
+- [Export CKL files](/stigmate/ckl-export) for STIG Viewer and RMF evidence
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="STIGMATE overview" icon="clipboard-check" href="/stigmate/index">
+    Product overview and scan lifecycle.
+  </Card>
+  <Card title="Scanning" icon="magnifying-glass" href="/stigmate/scanning">
+    Asset management, STIG library, and PPSM context.
+  </Card>
+  <Card title="Deployment" icon="server" href="/stigmate/deployment">
+    Architecture, Docker configuration, and health checks.
+  </Card>
+  <Card title="Concepts" icon="book" href="/stigmate/concepts">
+    STIG fundamentals, result codes, and CAT severity levels.
+  </Card>
+</CardGroup>

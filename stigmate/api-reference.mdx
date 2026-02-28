@@ -1,0 +1,272 @@
+---
+title: "API reference"
+description: "Complete REST API and WebSocket reference for STIGMATE including asset management, scanning, results, and CKL export endpoints"
+sidebarTitle: "API reference"
+---
+
+## Overview
+
+The STIGMATE API is a RESTful HTTP API served by the Go backend. All endpoints return JSON unless otherwise noted. The API also provides a WebSocket endpoint for real-time scan updates.
+
+The default base URL is `http://localhost:3333`. In production, the API is available at `https://stigmate.icbm.dev`.
+
+## Asset endpoints
+
+### List assets
+
+Retrieve all discovered hosts from the asset inventory.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Path** | `/api/assets` |
+| **Response** | JSON array of asset objects |
+
+```bash
+curl http://localhost:3333/api/assets
+```
+
+**Response:**
+
+```json
+[
+  {
+    "hostname": "rhel9-server",
+    "instance_id": "i-0abc123def456",
+    "platform": "Linux",
+    "os_name": "Red Hat Enterprise Linux 9.3",
+    "ssm_status": "Online"
+  }
+]
+```
+
+### Sync assets from AWS
+
+Refresh the asset inventory by querying AWS Systems Manager for all instances with the SSM agent online.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `POST` |
+| **Path** | `/api/aws/sync` |
+| **Response** | JSON object with sync results |
+
+```bash
+curl -X POST http://localhost:3333/api/aws/sync
+```
+
+**Response:**
+
+```json
+{
+  "synced": 12,
+  "new": 3,
+  "updated": 9,
+  "offline": 2
+}
+```
+
+## Scan endpoints
+
+### Start a scan
+
+Start a STIG compliance scan for a specific host. STIGMATE detects the OS, selects the matching STIG, and begins distributing checks to the agent pool.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `POST` |
+| **Path** | `/api/scan/{hostname}/start` |
+| **Path parameter** | `hostname` — the target host's hostname |
+| **Response** | JSON object with scan ID and status |
+
+```bash
+curl -X POST http://localhost:3333/api/scan/rhel9-server/start
+```
+
+**Response:**
+
+```json
+{
+  "scan_id": "550e8400-e29b-41d4-a716-446655440000",
+  "hostname": "rhel9-server",
+  "stig": "RHEL_9_STIG_V1R1",
+  "total_rules": 247,
+  "status": "running"
+}
+```
+
+<Warning>
+Only one scan can run per host at a time. Starting a scan for a host that already has a scan in progress returns a `409 Conflict` error.
+</Warning>
+
+### Get scan status
+
+Check the progress of a running or completed scan.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Path** | `/api/scan/{hostname}/status` |
+| **Path parameter** | `hostname` — the target host's hostname |
+| **Response** | JSON object with scan progress |
+
+```bash
+curl http://localhost:3333/api/scan/rhel9-server/status
+```
+
+**Response:**
+
+```json
+{
+  "scan_id": "550e8400-e29b-41d4-a716-446655440000",
+  "hostname": "rhel9-server",
+  "status": "running",
+  "total_rules": 247,
+  "completed_rules": 142,
+  "results_summary": {
+    "O": 18,
+    "NF": 112,
+    "NA": 8,
+    "NR": 4
+  }
+}
+```
+
+## Result endpoints
+
+### Get results
+
+Retrieve all results for a completed or in-progress scan.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Path** | `/api/results/{hostname}` |
+| **Path parameter** | `hostname` — the target host's hostname |
+| **Response** | JSON array of result objects |
+
+```bash
+curl http://localhost:3333/api/results/rhel9-server
+```
+
+**Response:**
+
+```json
+[
+  {
+    "rule_id": "V-261264",
+    "title": "RHEL 9 must require authentication for single-user mode",
+    "cat_level": 1,
+    "result": "NF",
+    "finding_detail": "Verified that /usr/lib/systemd/system/rescue.service contains ExecStart=-/usr/lib/systemd/systemd-sulogin-shell rescue. Single-user mode requires authentication.",
+    "cci": ["CCI-000213"],
+    "override": false
+  },
+  {
+    "rule_id": "V-261265",
+    "title": "RHEL 9 must enable FIPS mode",
+    "cat_level": 1,
+    "result": "O",
+    "finding_detail": "Ran 'fips-mode-setup --check' and received 'FIPS mode is disabled'. The system does not have FIPS mode enabled as required.",
+    "cci": ["CCI-000068"],
+    "override": false
+  }
+]
+```
+
+## Export endpoints
+
+### Export CKL
+
+Download a STIG Viewer-compatible CKL file for a completed scan.
+
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Path** | `/api/export/{hostname}/ckl` |
+| **Path parameter** | `hostname` — the target host's hostname |
+| **Response** | XML CKL file with `Content-Disposition` header |
+
+```bash
+curl -O http://localhost:3333/api/export/rhel9-server/ckl
+```
+
+<Info>
+CKL export is only available for completed scans. Requesting a CKL for a running scan returns a `400 Bad Request` error.
+</Info>
+
+## WebSocket
+
+### Connect to scan updates
+
+Establish a WebSocket connection to receive real-time scan events.
+
+| Property | Value |
+|----------|-------|
+| **Protocol** | `WS` or `WSS` |
+| **Path** | `/ws` |
+| **Events** | `check_started`, `check_completed`, `scan_completed` |
+
+```javascript
+const ws = new WebSocket('ws://localhost:3333/ws');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log(data.event, data.rule, data.result);
+};
+```
+
+### Event types
+
+| Event | Fields | Description |
+|-------|--------|-------------|
+| `check_started` | `rule`, `title`, `cat_level` | An agent has begun evaluating a STIG rule |
+| `check_completed` | `rule`, `title`, `cat_level`, `result`, `finding_detail` | An agent has completed evaluation with a result |
+| `scan_completed` | `hostname`, `total_rules`, `results_summary` | All rules have been evaluated and the scan is complete |
+
+**Example `check_completed` event:**
+
+```json
+{
+  "event": "check_completed",
+  "rule": "V-261264",
+  "title": "RHEL 9 must require authentication for single-user mode",
+  "cat_level": 1,
+  "result": "NF",
+  "finding_detail": "Verified that /usr/lib/systemd/system/rescue.service contains ExecStart=-/usr/lib/systemd/systemd-sulogin-shell rescue."
+}
+```
+
+## Error responses
+
+All endpoints return standard HTTP error codes with a JSON error body:
+
+| Status code | Meaning |
+|-------------|---------|
+| `400` | Bad request — invalid parameters or scan not in expected state |
+| `404` | Not found — hostname not in asset inventory |
+| `409` | Conflict — scan already running for this host |
+| `500` | Internal server error — check API logs for details |
+
+```json
+{
+  "error": "scan already running for host rhel9-server",
+  "status": 409
+}
+```
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Scanning" icon="magnifying-glass" href="/stigmate/scanning">
+    Asset management and scan execution.
+  </Card>
+  <Card title="Dashboard" icon="chart-kanban" href="/stigmate/dashboard">
+    Real-time kanban board and WebSocket updates.
+  </Card>
+  <Card title="CKL export" icon="file-export" href="/stigmate/ckl-export">
+    CKL format and STIG Viewer import.
+  </Card>
+  <Card title="Deployment" icon="server" href="/stigmate/deployment">
+    Architecture and configuration reference.
+  </Card>
+</CardGroup>

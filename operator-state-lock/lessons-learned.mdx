@@ -1,0 +1,186 @@
+---
+title: "Lessons learned"
+description: "How to add, query, and write effective operational lessons in Operator State Lock"
+sidebarTitle: "Lessons learned"
+---
+
+## Overview
+
+The lessons learned system is a structured knowledge base that captures operational insights across all operator sessions. When you discover something important while working on DEDZED infrastructure — a workaround, a common pitfall, a timing dependency — you record it as a lesson so every future operator benefits from your experience.
+
+## Severity levels
+
+Every lesson has a severity level that indicates how important it is for future operators to know.
+
+| Severity | When to use | Example |
+|----------|-------------|---------|
+| `info` | General tips, preferences, or observations that may be helpful | "Flux reconciliation takes ~3 minutes after Helm value changes" |
+| `high` | Important knowledge that could prevent errors or save significant time | "Istio upgrade requires gateway restart after Helm sync" |
+| `critical` | Must-know information that could cause outages, data loss, or security issues if ignored | "Never delete the flux-system namespace — it cannot be recreated without cluster rebuild" |
+
+<Tip>
+When in doubt, use `high`. It is better to over-classify a lesson than to have a future operator miss critical information because it was tagged as `info`.
+</Tip>
+
+## Adding lessons
+
+Use `osl learn` to add a lesson to the knowledge base:
+
+```bash
+osl learn --env management \
+  --lesson "Istio upgrade requires gateway restart after Helm sync" \
+  --tags "istio,upgrade,gateway" \
+  --severity high
+```
+
+### Environment-specific vs. global lessons
+
+By default, lessons are stored in the environment-specific file (`environments/{env}/lessons.jsonl`). Use the `--global` flag for lessons that apply across all environments:
+
+```bash
+# Environment-specific lesson
+osl learn --env management \
+  --lesson "Management cluster uses custom CoreDNS forwarders" \
+  --tags "dns,coredns" \
+  --severity info
+
+# Global lesson (applies to all environments)
+osl learn --env management \
+  --lesson "Always check Flux HelmRelease status after Helm value changes" \
+  --tags "flux,helm" \
+  --severity high \
+  --global
+```
+
+### Lesson storage format
+
+Lessons are stored as JSONL (JSON Lines) in S3. Each line is a self-contained JSON object:
+
+```json
+{
+  "lesson": "Istio upgrade requires gateway restart after Helm sync",
+  "tags": ["istio", "upgrade", "gateway"],
+  "severity": "high",
+  "related_changes": ["chg_a1b2c3d4"],
+  "environment": "management"
+}
+```
+
+If you hold a lock when recording a lesson, the current change IDs are automatically linked in `related_changes`.
+
+## Querying lessons
+
+Use `osl lessons` to query the knowledge base:
+
+```bash
+# All lessons for an environment
+osl lessons --env management
+
+# Filter by tags
+osl lessons --env management --tags istio,upgrade
+
+# Filter by severity
+osl lessons --env management --severity critical
+
+# Combine filters
+osl lessons --env management --tags helm --severity high
+
+# Query global lessons
+osl lessons --env management --global
+```
+
+### Example output
+
+```
+[CRITICAL] Never delete the flux-system namespace — it cannot be recreated without cluster rebuild
+  Tags: flux, namespace, danger
+  Related: chg_x1y2z3
+
+[HIGH] Istio upgrade requires gateway restart after Helm sync
+  Tags: istio, upgrade, gateway
+  Related: chg_a1b2c3d4
+
+[INFO] Flux reconciliation takes ~3 minutes after Helm value changes
+  Tags: flux, helm, timing
+```
+
+Lessons are displayed in descending severity order (critical first), then by recency.
+
+## When to read lessons
+
+The Operator State Lock workflow requires reading lessons **before** acquiring a lock. This is the most important step in the pre-flight checklist:
+
+1. Run `osl whoami` to verify your identity
+2. Run `osl changes` to review recent changes
+3. Run `osl lessons` to read operational knowledge
+4. Only then run `osl lock` to acquire the lock
+
+<Warning>
+Skipping the lessons step can lead to repeating known mistakes, missing critical warnings, or causing issues that a previous operator already documented.
+</Warning>
+
+## Writing effective lessons
+
+Good lessons are specific, actionable, and include enough context for someone who has never encountered the situation.
+
+### Good lessons
+
+| Lesson | Why it works |
+|--------|-------------|
+| "Istio upgrade requires gateway restart after Helm sync — run `kubectl rollout restart deployment/istio-ingressgateway -n istio-system`" | Specific action, includes the exact command |
+| "Big Bang Kyverno policies block pod creation if `appVersion` label is missing — add it to all Helm charts before deploying" | Identifies the cause and the fix |
+| "Production cert renewal requires coordination with the ISSO — contact them 48 hours in advance" | Process knowledge that prevents delays |
+
+### Weak lessons
+
+| Lesson | Why it is weak |
+|--------|---------------|
+| "Be careful with Istio" | Too vague — what specifically should you be careful about? |
+| "Had issues" | No context about what the issues were or how to avoid them |
+| "Check things before deploying" | Not actionable — what things? |
+
+### Guidelines for writing lessons
+
+- **Be specific** — Include exact commands, file paths, or resource names
+- **Include the fix** — If you found a workaround, document it
+- **Tag thoroughly** — Use all relevant tags so the lesson surfaces in searches
+- **Set appropriate severity** — Critical for anything that could cause outages
+- **Link to changes** — If the lesson relates to a specific change, recording it while you hold the lock automatically links it
+
+## Lesson lifecycle
+
+Lessons in Operator State Lock are append-only. They are never modified or deleted. This ensures a complete knowledge base that grows over time.
+
+If a lesson becomes outdated, add a new lesson with updated information and reference the original:
+
+```bash
+osl learn --env management \
+  --lesson "UPDATE: Istio gateway restart is no longer needed after v1.21 upgrade — auto-restart is now enabled" \
+  --tags "istio,upgrade,gateway" \
+  --severity info
+```
+
+## Best practices
+
+- **Record lessons immediately** — Capture insights while the context is fresh. Do not wait until the end of a long session.
+- **Read before writing** — Before adding a lesson, check if a similar one already exists. Avoid duplicates.
+- **Use critical sparingly** — Reserve `critical` for information that truly prevents outages or data loss. Overusing critical severity dilutes its impact.
+- **Tag for discoverability** — Think about what tags a future operator would search for when facing the same situation.
+- **Include timing information** — If a process takes a specific amount of time, note it. "Flux reconciliation takes ~3 minutes" is more useful than "Flux reconciliation takes a while."
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Concepts" icon="lightbulb" href="/operator-state-lock/concepts">
+    State locking theory and the append-only change log.
+  </Card>
+  <Card title="CLI reference" icon="terminal" href="/operator-state-lock/commands">
+    Full reference for `learn` and `lessons` commands.
+  </Card>
+  <Card title="Getting started" icon="rocket" href="/operator-state-lock/getting-started">
+    Complete your first lock cycle including recording lessons.
+  </Card>
+  <Card title="Overview" icon="book" href="/operator-state-lock/index">
+    What Operator State Lock is and how it works.
+  </Card>
+</CardGroup>

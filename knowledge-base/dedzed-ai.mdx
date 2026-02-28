@@ -14,11 +14,15 @@ flowchart LR
         K["Kasm Agent"]
         D["Dashboard Agent"]
         S["Shredder Agent"]
+        ST["STIGMATE Agents"]
+        R["RMF MCP Server"]
     end
 
     K -->|"Code + debug"| KW["Kasm Workspace"]
     D -->|"Deploy + manage"| CMD["Command Dashboard"]
     S -->|"Analyze + remediate"| SH["Shredder"]
+    ST -->|"Evaluate STIGs"| STIG["STIGMATE"]
+    R -->|"Compliance assist"| RMF["RMF"]
 ```
 
 ## Kasm workspace agent
@@ -65,6 +69,18 @@ DEDZED AI is built into the [Shredder](/knowledge-base/shredder) Security Platfo
   allow="fullscreen"
 />
 
+## STIGMATE compliance agents
+
+[STIGMATE](/stigmate/index) uses Claude AI agents to automate STIG compliance scanning. Each agent receives a STIG check procedure, executes commands on target systems via AWS SSM, interprets the results, and determines compliance status — all without human intervention. Agents run in parallel (configurable concurrency) and broadcast results in real time to a kanban dashboard via WebSocket.
+
+STIGMATE agents can evaluate 395+ STIGs across operating systems, databases, network devices, and cloud platforms. Results are classified as Open, Not a Finding, Not Applicable, or Not Reviewed, and can be exported as CKL checklists.
+
+## RMF MCP integration
+
+[RMF](/rmf/index) exposes a Model Context Protocol (MCP) server that enables AI-powered compliance assistance. The MCP server provides tools for analyzing evidence gaps, suggesting control implementations, and generating policy documents — all within the context of your RMF project data.
+
+You can connect Claude Desktop or other MCP-compatible clients to the RMF MCP server to interact with your compliance data conversationally. See [MCP integration](/rmf/mcp-integration) for setup instructions.
+
 ## Related pages
 
 <CardGroup cols={2}>
@@ -79,5 +95,11 @@ DEDZED AI is built into the [Shredder](/knowledge-base/shredder) Security Platfo
   </Card>
   <Card title="Connect to your cluster" icon="link" href="/kasm-workspaces/connect-cluster">
     Connect to your ephemeral cluster from Kasm.
+  </Card>
+  <Card title="STIGMATE" icon="clipboard-check" href="/stigmate/index">
+    AI-powered STIG compliance scanning.
+  </Card>
+  <Card title="RMF MCP integration" icon="scale-balanced" href="/rmf/mcp-integration">
+    AI-powered compliance assistance via MCP.
   </Card>
 </CardGroup>

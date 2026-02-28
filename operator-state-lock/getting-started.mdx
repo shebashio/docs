@@ -1,0 +1,246 @@
+---
+title: "Getting started"
+description: "Install Operator State Lock, configure AWS credentials, and complete your first lock cycle"
+sidebarTitle: "Getting started"
+---
+
+## Overview
+
+This guide walks you through installing Operator State Lock, verifying your AWS identity, and completing your first lock-unlock cycle. By the end, you will have acquired a lock, recorded a change, and released the lock.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- **AWS CLI** configured with credentials for the DEDZED GovCloud accounts
+- **Go 1.21+** installed (if building from source)
+- Access to one of the DEDZED operator S3 buckets:
+  - Management: `dedzed-operator-state-lock-mgmt` (account `128816533700`)
+  - Production: `dedzed-operator-state-lock-prod` (account `472638764647`)
+
+<Info>
+Operator State Lock uses your existing AWS credentials. If you can run `aws sts get-caller-identity` successfully, you have the credentials you need.
+</Info>
+
+## Installation
+
+### Download the binary
+
+Download the latest `osl` binary for your platform from the releases page:
+
+```bash
+# Linux (amd64)
+curl -L -o osl https://github.com/shebashio/operator-state-lock/releases/latest/download/osl-linux-amd64
+chmod +x osl
+sudo mv osl /usr/local/bin/
+
+# macOS (arm64)
+curl -L -o osl https://github.com/shebashio/operator-state-lock/releases/latest/download/osl-darwin-arm64
+chmod +x osl
+sudo mv osl /usr/local/bin/
+```
+
+### Build from source
+
+If you prefer to build from source:
+
+```bash
+go install github.com/shebashio/operator-state-lock/cmd/osl@latest
+```
+
+### Verify installation
+
+```bash
+osl --version
+```
+
+## Initialize the bucket structure
+
+If you are setting up Operator State Lock for the first time against a new S3 bucket, run `init` to create the required directory structure:
+
+```bash
+osl init --env management
+```
+
+This creates the `environments/`, `global/`, and `config.json` prefixes in the S3 bucket. You only need to run this once per bucket.
+
+<Note>
+If the bucket structure already exists, `init` is a no-op. It is safe to run multiple times.
+</Note>
+
+## Verify your identity
+
+Run `whoami` to confirm Operator State Lock can resolve your AWS identity:
+
+```bash
+osl whoami
+```
+
+Example output:
+
+```
+Operator: jane.smith
+ARN:      arn:aws-us-gov:iam::128816533700:user/jane.smith
+Account:  128816533700
+```
+
+This identity is automatically attached to every lock, change, and lesson you create.
+
+## Your first lock cycle
+
+### Step 1: Review recent changes
+
+Before acquiring a lock, review what other operators have done recently:
+
+```bash
+osl changes --env management --last 5
+```
+
+Example output:
+
+```
+[2025-03-15T14:30:00Z] jane.smith (success)
+  Action: Updated Big Bang Helm values
+  Description: Bumped Istio to 1.20.3 for CVE-2024-1234 fix
+  Files: bigbang/values.yaml
+  Tags: bigbang, istio, cve
+
+[2025-03-15T10:15:00Z] john.doe (success)
+  Action: Rotated TLS certificates
+  Description: Renewed wildcard cert for *.mgmt.dedzed.cloud
+  Files: certs/wildcard.pem
+  Tags: tls, certificates
+```
+
+### Step 2: Read lessons learned
+
+Check if previous operators left any important lessons:
+
+```bash
+osl lessons --env management
+```
+
+Example output:
+
+```
+[HIGH] Istio upgrade requires gateway restart after Helm sync
+  Tags: istio, upgrade, gateway
+  Related: chg_a1b2c3d4
+
+[INFO] Flux reconciliation takes ~3 minutes after Helm value changes
+  Tags: flux, helm, timing
+```
+
+### Step 3: Acquire the lock
+
+Now that you have context, acquire the lock:
+
+```bash
+osl lock --env management --purpose "Adding new monitoring dashboards"
+```
+
+Example output:
+
+```
+Lock acquired successfully.
+  Lock ID:     lock_f5e4d3c2
+  Environment: management
+  TTL:         300s
+  Heartbeat:   started (PID 12345)
+```
+
+The heartbeat process starts automatically in the background and refreshes the lock every 60 seconds.
+
+### Step 4: Do your work
+
+Make your infrastructure changes. Operator State Lock does not interfere with your tools or workflows — it only coordinates access.
+
+### Step 5: Record your change
+
+After making changes, record what you did:
+
+```bash
+osl record --env management \
+  --action "Added Grafana dashboards" \
+  --description "Added cluster health and Big Bang component dashboards" \
+  --files "monitoring/dashboards/cluster-health.json,monitoring/dashboards/bigbang-components.json" \
+  --tags "monitoring,grafana,dashboards"
+```
+
+<Warning>
+Always record your changes before unlocking. The change log is the primary way future operators understand what happened in the environment.
+</Warning>
+
+### Step 6: Capture lessons (optional but recommended)
+
+If you learned something worth sharing, record it:
+
+```bash
+osl learn --env management \
+  --lesson "Grafana dashboard imports require a Flux reconciliation before they appear" \
+  --tags "grafana,flux,dashboards" \
+  --severity info
+```
+
+### Step 7: Release the lock
+
+When you are done, release the lock:
+
+```bash
+osl unlock --env management
+```
+
+Example output:
+
+```
+Lock released successfully.
+  Lock ID:   lock_f5e4d3c2
+  Duration:  12m34s
+  Heartbeat: stopped (PID 12345)
+```
+
+The heartbeat subprocess is automatically killed when you unlock.
+
+## What if the lock is already held?
+
+If another operator holds the lock, `osl lock` will fail with an error:
+
+```
+Error: environment "management" is currently locked.
+  Locked by: john.doe
+  Purpose:   Rotating TLS certificates
+  Since:     2025-03-15T14:30:00Z
+  TTL:       300s
+
+Use "osl status --env management" to check if the lock is stale.
+```
+
+You have two options:
+
+1. **Wait** — Coordinate with the lock holder and wait for them to finish.
+2. **Force-unlock** — If the lock is stale (no heartbeat for 2x TTL), you can force-release it with `osl force-unlock --env management`.
+
+<Warning>
+Never force-unlock a lock that is actively held. Only use `force-unlock` when the lock is confirmed stale. See [CLI reference](/operator-state-lock/commands) for details.
+</Warning>
+
+## Next steps
+
+You have completed your first lock cycle. Explore these pages to learn more:
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="CLI reference" icon="terminal" href="/operator-state-lock/commands">
+    Full reference for all 11 commands with flags and examples.
+  </Card>
+  <Card title="Concepts" icon="lightbulb" href="/operator-state-lock/concepts">
+    Understand state locking theory and the heartbeat mechanism.
+  </Card>
+  <Card title="AWS configuration" icon="cloud" href="/operator-state-lock/aws-configuration">
+    Configure IAM policies and cross-account access for GovCloud.
+  </Card>
+  <Card title="Lessons learned" icon="graduation-cap" href="/operator-state-lock/lessons-learned">
+    Best practices for writing and querying operational lessons.
+  </Card>
+</CardGroup>
