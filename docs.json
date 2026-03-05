@@ -133,30 +133,7 @@
         ]
       }
     ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "DEDZED Platform",
-          "href": "https://dedzed.icbm.dev",
-          "icon": "rocket"
-        },
-        {
-          "anchor": "Kasm VDI",
-          "href": "https://kasm.icbm.dev",
-          "icon": "desktop"
-        },
-        {
-          "anchor": "STIGMATE",
-          "href": "https://stigmate.icbm.dev",
-          "icon": "clipboard-check"
-        },
-        {
-          "anchor": "RMF",
-          "href": "https://rmf.icbm.dev",
-          "icon": "scale-balanced"
-        }
-      ]
-    }
+    "global": {}
   },
   "logo": {
     "light": "/logo/light.svg",
