@@ -41,7 +41,10 @@
               "knowledge-base/ephemeral-environments",
               "knowledge-base/k9s-cheat-sheet",
               "knowledge-base/python-development",
-              "knowledge-base/dedzed-ai"
+              "knowledge-base/dedzed-ai",
+              "knowledge-base/troubleshooting",
+              "knowledge-base/glossary",
+              "knowledge-base/service-endpoints"
             ]
           },
           {

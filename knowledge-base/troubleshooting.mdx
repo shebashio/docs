@@ -1,0 +1,223 @@
+---
+title: "Troubleshooting"
+description: "Structured troubleshooting guide for common DEDZED platform issues"
+sidebarTitle: "Troubleshooting"
+---
+
+This guide consolidates troubleshooting procedures across the DEDZED platform. Each issue follows a structured approach: identify the symptom, gather information, isolate the cause, and apply the resolution.
+
+For service-specific details, follow the links to the relevant documentation page.
+
+---
+
+## Access and authentication
+
+### CAC sign-in fails
+
+**Symptom**: You cannot sign in with your Common Access Card at `kasm.icbm.dev`.
+
+**Information gathering**: Confirm your CAC is inserted and recognized by your machine. Try a different browser or clear cached certificates.
+
+**Resolution**:
+1. Contact the SHE BASH team through the [support page](/support/contact).
+2. If the issue cannot be resolved, an admin can add you to the **CAC exclusion list**.
+3. Once on the exclusion list, sign in with your DEDZED username, password, and an MFA method of your choice.
+
+<Info>
+CAC passthrough does not work inside Kasm VDI sessions. Use your DEDZED username and password for authentication within Kasm.
+</Info>
+
+See [Self-registration: CAC issues](/getting-started/self-registration#troubleshooting-cac-issues) for the full walkthrough.
+
+### Authentication prompt loops
+
+**Symptom**: You are repeatedly redirected to the Ping Identity login page when connecting to a cluster.
+
+**Information gathering**: Check whether your Rancher API token has expired. Open the DEDZED Command Dashboard and verify your session is active.
+
+**Resolution**: Create a new Rancher API token and re-run the `setup.sh` script. See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troubleshooting).
+
+### 403 Forbidden errors
+
+403 errors can come from multiple layers. Identify the source to determine the fix.
+
+| Source | How to identify | Cause | Fix |
+|--------|----------------|-------|-----|
+| WAF | Raw `403` with no HTML | `Origin` header missing or incorrect | Verify browser sends `Origin: https://kasm.icbm.dev` |
+| WAF | Raw `403` with no HTML | Path doesn't match UUID regex | Verify URL is `/desktop/{uuid}/...` format |
+| WAF | Raw `403` with no HTML | Rate limited | Check WAF CloudWatch metrics, adjust threshold if needed |
+| ALB | Plain text "Access denied" | Non-desktop path blocked | Check if path matches `/desktop/*` |
+| Nginx | HTML-formatted 403 | Kasm agent auth failing | Check that `session_token` cookie is being sent |
+| RMF API | JSON error response | Insufficient role permissions | Verify your role has the required permission for the action. See [Roles and permissions](/rmf/roles-and-permissions) |
+
+See [Zero trust: Troubleshooting](/knowledge-base/zero-trust#troubleshooting) for the full WAF/ALB/nginx breakdown.
+
+---
+
+## Cluster connection
+
+### Cluster not found or failed to fetch
+
+**Symptom**: `No clusters found or failed to fetch clusters` when running the connection script.
+
+**Information gathering**: Open the [DEDZED Command Dashboard](https://dedzed.icbm.dev) and check your cluster status.
+
+**Resolution**: Your cluster may still be provisioning. Wait for it to show as **online** in the dashboard. Provisioning typically takes 10-15 minutes. See [Provisioning time](/getting-started/provision-time).
+
+### Connection refused errors
+
+**Symptom**: `connection refused` when running `kubectl` or `k9s` commands.
+
+**Information gathering**: Verify the cluster is online in the DEDZED Command Dashboard. Check that your Kasm session has network connectivity.
+
+**Resolution**: If the cluster shows as online, re-run `setup.sh` to refresh your kubeconfig. If the cluster is not listed, it may have expired (TTL reached).
+
+### Kubeconfig file not found
+
+**Symptom**: Kubeconfig file not found in `~/Documents` after running the sync script.
+
+**Information gathering**: Check the terminal output from `setup.sh` for errors.
+
+**Resolution**: Re-run `setup.sh` from the desktop and watch for error messages during execution.
+
+See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troubleshooting) for all connection issues.
+
+---
+
+## Zero trust and network
+
+### No cookies sent to kasm-direct
+
+**Symptom**: Requests to `kasm-direct.icbm.dev` do not include the `session_token` cookie.
+
+**Information gathering**: Open browser dev tools (Network tab) and inspect request headers to `kasm-direct.icbm.dev`.
+
+**Resolution**: Set the Kasm Auth Domain to `.icbm.dev`. This allows cookie sharing across subdomains.
+
+### Agent internal_auth fails
+
+**Symptom**: Kasm agent reports `internal_auth` failure.
+
+**Information gathering**: Check the Upstream Auth Address configuration.
+
+**Resolution**: Set Upstream Auth Address to `kasm.icbm.dev` (not `kasm-direct`).
+
+### WebSocket timeout
+
+**Symptom**: Kasm sessions disconnect or become unresponsive after a period of inactivity.
+
+**Information gathering**: Check the ALB idle timeout setting.
+
+**Resolution**: Increase the ALB idle timeout to `3600` seconds.
+
+### Verify cookie sharing
+
+To confirm cookies are being sent correctly, check browser dev tools (Network tab, Request Headers):
+
+- Request to `kasm-direct.icbm.dev` should include `Cookie: session_token=...`
+- Request to `kasm-direct.icbm.dev` should include `Origin: https://kasm.icbm.dev`
+- If either is missing, check the Kasm Auth Domain setting
+
+See [Zero trust access](/knowledge-base/zero-trust) for the full architecture and troubleshooting table.
+
+---
+
+## STIGMATE
+
+### Scan already running
+
+**Symptom**: API returns `409 Conflict` when starting a scan.
+
+**Resolution**: A scan is already in progress for that host. Wait for it to complete or check the [STIGMATE dashboard](https://stigmate.icbm.dev) for progress.
+
+### Host not found in asset inventory
+
+**Symptom**: API returns `404 Not Found` when targeting a host.
+
+**Resolution**: Run an AWS SSM sync first (`POST /api/aws/sync`) to refresh the asset inventory. The target host must have an active SSM agent.
+
+### API errors
+
+| Status code | Meaning | Action |
+|-------------|---------|--------|
+| `400` | Invalid parameters or scan not in expected state | Check your request body and the current scan state |
+| `404` | Hostname not in asset inventory | Sync assets via `POST /api/aws/sync` |
+| `409` | Scan already running for this host | Wait for the current scan to complete |
+| `500` | Internal server error | Check API logs for details |
+
+See [STIGMATE API reference](/stigmate/api-reference#error-responses) for response format details.
+
+---
+
+## RMF
+
+### Permission denied on API requests
+
+**Symptom**: API returns `403 Forbidden`.
+
+**Resolution**: Your role does not have permission for the requested action. Check [Roles and permissions](/rmf/roles-and-permissions) for the full permission matrix. Only a PM can assign roles to project members.
+
+### Rate limiting
+
+**Symptom**: API returns `429 Too Many Requests`.
+
+**Resolution**: Standard endpoints allow 100 requests per minute. Upload endpoints allow 20 requests per minute. Wait and retry, or reduce request frequency.
+
+### API errors
+
+| Status code | Meaning | Action |
+|-------------|---------|--------|
+| `400` | Invalid input or missing required fields | Check your request body against the API docs |
+| `401` | Missing or invalid authentication | Verify your token is valid and not expired |
+| `403` | Insufficient permissions | Check your role's permissions for this action |
+| `404` | Resource does not exist | Verify the project or control ID |
+| `409` | Duplicate resource or invalid state transition | Check the current workflow state |
+| `422` | Validation error | Review field values against allowed options |
+| `429` | Rate limit exceeded | Wait and retry |
+| `500` | Internal server error | Contact support |
+
+See [RMF API reference](/rmf/api-reference#error-handling) for error response format details.
+
+---
+
+## Operator State Lock
+
+### Access denied errors
+
+If you receive `AccessDenied` errors:
+
+1. Verify your identity with `osl whoami`
+2. Confirm your IAM user or role has the operator policy attached
+3. For production, verify you can assume the `OrganizationAccountAccessRole`
+4. Check that the S3 bucket policy does not block your principal
+
+### Cross-account role assumption failures
+
+If `sts:AssumeRole` fails for the production account:
+
+1. Verify the trust policy on `OrganizationAccountAccessRole` includes your management account
+2. Confirm your management account IAM entity has `sts:AssumeRole` permission for the production role ARN
+3. Check for any SCP (Service Control Policy) restrictions in your AWS Organization
+
+### Region configuration
+
+Operator State Lock expects buckets in `us-gov-west-1`. If your AWS CLI defaults to a different region:
+
+```bash
+export AWS_DEFAULT_REGION=us-gov-west-1
+```
+
+See [AWS configuration: Troubleshooting](/operator-state-lock/aws-configuration#troubleshooting) for full IAM and cross-account details.
+
+---
+
+## Still need help?
+
+<CardGroup cols={2}>
+  <Card title="Contact support" icon="envelope" href="/support/contact">
+    Report an issue or request assistance from the DEDZED team
+  </Card>
+  <Card title="Service endpoints" icon="link" href="/knowledge-base/service-endpoints">
+    Quick reference for all platform URLs
+  </Card>
+</CardGroup>

@@ -1,0 +1,38 @@
+---
+title: "Service endpoints"
+description: "Quick reference for all DEDZED platform URLs and access requirements"
+sidebarTitle: "Service endpoints"
+---
+
+## Platform services
+
+| Service | URL | Access |
+|---------|-----|--------|
+| DEDZED Command Dashboard | [dedzed.icbm.dev](https://dedzed.icbm.dev) | Browser via AWS Verified Access |
+| Kasm VDI | [kasm.icbm.dev](https://kasm.icbm.dev) | Browser via AWS Verified Access |
+| Kasm WebSocket | `kasm-direct.icbm.dev` | Internal — WAF-protected WebSocket endpoint |
+| Rancher | [rancher.icbm.dev](https://rancher.icbm.dev) | Kasm sessions only |
+
+## Internal services
+
+These services are accessible only from within a Kasm VDI session.
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Shredder | [shredder.icbm.dev](https://shredder.icbm.dev) | Multi-engine security scanning with quality gates |
+| STIGMATE | [stigmate.icbm.dev](https://stigmate.icbm.dev) | AI-powered STIG compliance scanning |
+| RMF | [rmf.icbm.dev](https://rmf.icbm.dev) | Risk Management Framework and ATO tracking |
+| RMF API | `rmf.icbm.dev/api/v1` | RESTful API for RMF data |
+| RMF MCP | `rmf.icbm.dev:8001/sse` | Model Context Protocol server for AI tool integration |
+
+## Authentication
+
+All services authenticate through **Ping Identity**. Initial sign-in requires a valid CAC at `kasm.icbm.dev`. Within Kasm sessions, use your DEDZED username and password.
+
+## Network access
+
+DEDZED uses a [zero trust access model](/knowledge-base/zero-trust) — no VPN is required. All external access flows through AWS Verified Access, which authenticates every connection before granting access to platform services.
+
+<Info>
+Internal services (Shredder, STIGMATE, RMF) are not accessible from outside a Kasm session. Start a Kasm VDI session first, then navigate to the service URL within the session browser.
+</Info>

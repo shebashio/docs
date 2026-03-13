@@ -18,11 +18,30 @@ Use the feedback widget for bug reports and system issues. It captures your sess
 
 You can reach the team directly at [dedzed-tech@shebash.io](mailto:dedzed-tech@shebash.io).
 
+## Issue severity
+
+When reporting an issue, select the severity that best matches your situation. This helps the team prioritize and respond appropriately.
+
+| Severity | Description | Examples |
+|----------|-------------|---------|
+| **Critical** | Platform unusable — all users affected or data at risk | Kasm VDI unreachable, DEDZED Command Dashboard down, authentication system failure |
+| **High** | Major feature broken — your work is blocked | Cluster deployment fails, cannot connect to a running cluster, Shredder scans not completing |
+| **Medium** | Feature degraded — workaround available | Slow provisioning, intermittent WebSocket disconnects, dashboard UI rendering issues |
+| **Low** | Minor issue or question — no immediate impact | Documentation clarification, feature request, cosmetic UI issue |
+
 ## What to include in a report
 
 When reporting an issue, include the following details so the team can help you quickly:
 
+- **Severity level** from the table above
 - A description of what you were trying to do
 - The steps to reproduce the issue
 - Any error messages or screenshots
 - Your cluster name, if applicable
+- The service affected (Kasm, DEDZED Command Dashboard, Shredder, STIGMATE, RMF)
+
+## How issues are handled
+
+1. **Feedback widget** — Notifies the team instantly with your session context. Best for issues you encounter while working in the DEDZED Command Dashboard.
+2. **Email** — Reviewed during business hours. Use for detailed reports or issues outside the dashboard.
+3. **Escalation** — Critical and high severity issues are escalated to the engineering team immediately. You will receive a response acknowledging the issue.
