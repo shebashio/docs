@@ -1,0 +1,183 @@
+---
+title: "Image build process"
+description: "How DEDZED builds, scans, and publishes container images for Kasm Workspaces and GitHub Actions self-hosted runners"
+sidebarTitle: "Image build process"
+---
+
+## Overview
+
+DEDZED maintains two container images that underpin the platform's development and CI/CD infrastructure:
+
+- **Kasm workspace image** — the browser-based virtual desktop environment users interact with daily
+- **GitHub Actions runner image** — the self-hosted runner that executes CI/CD pipelines on GitHub Enterprise Server
+
+Both images are built from the [`shebashio/images`](https://github.icbm.dev/shebashio/images) repository. They use multi-stage Docker builds that pull FIPS-compliant binaries from Chainguard images, undergo dual vulnerability scanning, and are pushed to Amazon ECR in AWS GovCloud.
+
+## Image architecture
+
+### Chainguard FIPS supply chain
+
+Rather than installing tools via package managers or downloading unsigned binaries, both images use a **multi-stage build pattern** that copies pre-built binaries from [Chainguard](https://www.chainguard.dev/) FIPS images. This approach provides:
+
+- **FIPS 140-2 compliance** — all cryptographic operations use validated modules
+- **Minimal attack surface** — no package manager or build toolchain in the final image
+- **Reproducible builds** — pinned image tags ensure consistent outputs
+- **Signed provenance** — Chainguard images include supply chain attestations
+
+Each tool is sourced from a dedicated Chainguard image stage (e.g., `cgr.dev/shebash.io/kubectl-fips:latest`) and copied into the final image at a known path.
+
+### Kasm workspace image
+
+The Kasm image (`Dockerfile-ubuntu`) extends `kasmweb/ubuntu-noble-dind-rootless` and installs the full developer toolkit available in the browser-based desktop.
+
+**Base:** Kasm Ubuntu Noble with rootless Docker-in-Docker
+
+**Chainguard FIPS tools:**
+
+| Tool | Source image |
+|---|---|
+| Flux | `flux-fips` |
+| kubectl | `kubectl-fips` |
+| Helm | `helm-fips` |
+| GitHub CLI | `gh` |
+| Cosign | `cosign-fips` |
+| Docker CLI | `docker-cli-fips` |
+| Docker daemon (DinD) | `docker-dind-fips` |
+| Docker Compose | `docker-compose-fips` |
+| Go toolchain | `go-fips` |
+| AWS CLI v2 | `aws-cli-fips` |
+| Conda + Python 3.12 | `conda-fips` |
+
+**Wolfi-packaged tools:** k9s, sops, jq
+
+**Source-built tools (compiled with FIPS Go):** kubelogin, krew, rootlesskit
+
+**Install scripts:** Additional tools like Chrome, VS Code, Chainloop, and npm security packages are installed via scripts in `src/ubuntu/install/`.
+
+<Note>
+  `GODEBUG=fips140=off` is set at runtime because the Kasm base image ships OpenSSL 3.0 without the FIPS provider. Desktop containers do not require FIPS compliance for Docker-in-Docker operations.
+</Note>
+
+### GitHub Actions runner image
+
+The runner image (`Dockerfile-gh-runner`) is built on Chainguard's `actions-runner` base (Wolfi/FIPS) and provides every tool needed for CI/CD pipelines.
+
+**Base:** `cgr.dev/shebash.io/actions-runner:v2.331.0` (includes runner binary, git, curl, bash, Node.js)
+
+**Chainguard FIPS tools:**
+
+| Tool | Source image | Version |
+|---|---|---|
+| Go | `go-fips` | v1.25.7.1 |
+| Terraform | `terraform` | v1.14.4 |
+| Azure CLI | `az-fips` | v2.83.0 |
+| Trivy | `trivy-fips` | v0.69.1 |
+| Grype | `grype-fips` | v0.108.0 |
+| kubectl | `kubectl-fips` | latest |
+| Helm | `helm-fips` | latest |
+| Flux | `flux-fips` | latest |
+| GitHub CLI | `gh` | latest |
+| Docker CLI | `docker-cli-fips` | latest |
+| Docker daemon (DinD) | `docker-dind-fips` | latest |
+| AWS CLI v2 | `aws-cli-fips` | latest |
+
+**Source-built tools:** sops (v3.11.0), kubectl-terminate (custom plugin)
+
+**Additional tools:** jq, certbot + certbot-dns-cloudflare, sudo
+
+The runner image includes the OpenSSL FIPS provider (`fips.so`) so FIPS Go binaries operate in full FIPS mode at runtime.
+
+## CI/CD pipeline
+
+### Build workflow
+
+The `build.yaml` workflow handles automated image building, scanning, and publishing.
+
+**Triggers:**
+- Manual dispatch (workflow_dispatch)
+- Weekly schedule (Sunday 23:59 UTC)
+- Pull requests to `main` that modify Dockerfiles
+
+**Pipeline stages:**
+
+<Steps>
+  <Step title="Dockerfile discovery">
+    Dynamically discovers all `Dockerfile-*` files and creates a build matrix.
+  </Step>
+  <Step title="Docker build">
+    Builds each image using Docker Buildx.
+  </Step>
+  <Step title="Vulnerability scanning">
+    Runs **Trivy** and **Grype** in parallel. Both scanners check for HIGH and CRITICAL severity CVEs. The build fails if any fixable CVEs are detected.
+  </Step>
+  <Step title="SBOM generation">
+    Generates SPDX Software Bills of Materials using Anchore.
+  </Step>
+  <Step title="ECR push">
+    Pushes images to Amazon ECR in AWS GovCloud (`us-gov-west-1`).
+  </Step>
+  <Step title="Supply chain attestation">
+    Signs and attests images via Chainloop with AWS KMS.
+  </Step>
+</Steps>
+
+Scan reports are uploaded as build artifacts with 30-day retention.
+
+### Packer workflow
+
+The `packer.yaml` workflow builds AMIs for Kasm manager nodes.
+
+**Triggers:** Pull requests to `main` that modify AMI-related files
+
+**Targets:** AWS GovCloud and Azure
+
+The AMIs are provisioned with Ansible (`ami/ansible/playbook.yaml`) to configure the Kasm management plane on EC2 and Azure VMs.
+
+## ECR registry
+
+Published images are stored in Amazon ECR in AWS GovCloud:
+
+```
+472638764647.dkr.ecr.us-gov-west-1.amazonaws.com/gh-runner:latest
+472638764647.dkr.ecr.us-gov-west-1.amazonaws.com/ubuntu:latest
+```
+
+ECR lifecycle policies automatically expire untagged images after 14 days.
+
+## Adding new tools
+
+### To the Kasm workspace image
+
+1. Create a directory at `src/ubuntu/install/<tool>/`
+2. Add an `install_<tool>.sh` script
+3. Add the script path to the `INST_SCRIPTS` variable in `Dockerfile-ubuntu`
+
+If a Chainguard FIPS image exists for the tool, prefer a `COPY --from` stage over a shell install script.
+
+### To the GitHub runner image
+
+Add installation commands directly to `Dockerfile-gh-runner`. Use a Chainguard FIPS image stage when available; fall back to a `go build` in the `go-build` stage or a binary download in the `build` stage.
+
+## Repository structure
+
+```
+shebashio/images/
+├── Dockerfile-ubuntu          # Kasm workspace image
+├── Dockerfile-gh-runner       # GitHub Actions runner image
+├── src/ubuntu/install/        # Install scripts for Kasm image
+│   ├── chrome/
+│   ├── vs_code/
+│   ├── kubelogin/
+│   ├── krew/
+│   ├── rebuild-go/            # Recompiles Go binaries with FIPS toolchain
+│   ├── cleanup-security/
+│   └── ...
+├── kubectl-terminate/         # Custom kubectl plugin (Go)
+├── ami/
+│   ├── packer/                # HCL templates for AWS/Azure AMIs
+│   └── ansible/               # Playbook for Kasm manager provisioning
+├── .github/workflows/
+│   ├── build.yaml             # Image build, scan, and push
+│   └── packer.yaml            # AMI validation and build
+└── scripts/                   # Developer setup (git hooks, tool install)
+```

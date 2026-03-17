@@ -44,7 +44,11 @@
               "knowledge-base/dedzed-ai",
               "knowledge-base/troubleshooting",
               "knowledge-base/glossary",
-              "knowledge-base/service-endpoints"
+              "knowledge-base/service-endpoints",
+              "knowledge-base/image-build-process",
+              "knowledge-base/image-sync",
+              "knowledge-base/command-dashboard",
+              "knowledge-base/shredder-infra"
             ]
           },
           {

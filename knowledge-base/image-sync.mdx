@@ -1,0 +1,135 @@
+---
+title: "Image sync"
+description: "How DEDZED syncs EzRMF and STIGMATE container images from GHCR to AWS GovCloud ECR"
+sidebarTitle: "Image sync"
+---
+
+## Overview
+
+The [`shebashio/image-sync`](https://github.icbm.dev/shebashio/image-sync) repository automates the process of pulling container images from GitHub Container Registry (GHCR) on github.com and pushing them to Amazon ECR in AWS GovCloud. This keeps the production Kubernetes cluster running the latest versions of EzRMF and STIGMATE without manual intervention.
+
+The sync runs every 5 minutes on a self-hosted GitHub Actions runner and only pushes when a new tag is detected.
+
+## Synced images
+
+| Application | GHCR source | ECR repository |
+|---|---|---|
+| EzRMF backend | `ghcr.io/shebashio/ezrmf-backend` | `ezrmf-backend` |
+| EzRMF frontend | `ghcr.io/shebashio/ezrmf-frontend` | `ezrmf-frontend` |
+| RMF Manager frontend | `ghcr.io/shebashio/frontend-rmf-manager` | `frontend-rmf-manager` |
+| STIGMATE | `ghcr.io/shebashio/stigmate` | `stigmate` |
+
+All images are pushed to ECR in AWS GovCloud (`us-gov-west-1`) with both a versioned tag and `:latest`.
+
+## How it works
+
+```
+github.com/shebashio/rmf        → ghcr.io/shebashio/ezrmf-backend
+                                 → ghcr.io/shebashio/ezrmf-frontend
+                                 → ghcr.io/shebashio/frontend-rmf-manager
+
+github.com/shebashio/stigmate   → ghcr.io/shebashio/stigmate
+
+                    ↓ polls every 5 minutes
+
+Production ECR:  472638764647.dkr.ecr.us-gov-west-1.amazonaws.com
+```
+
+<Steps>
+  <Step title="Check for updates">
+    The workflow reads `manifest.yml` to get the list of images, queries the GHCR API for the latest semver tag on each, and compares it against `.sync-state.json` (the last synced tag per image).
+  </Step>
+  <Step title="Pull from GHCR">
+    For any image with a new tag, the workflow pulls it from GHCR using a GitHub PAT with `read:packages` scope.
+  </Step>
+  <Step title="Authenticate to ECR">
+    The runner authenticates to production ECR via OIDC (`GHES_OIDC_ROLE` in the production AWS account).
+  </Step>
+  <Step title="Push to ECR">
+    Each image is tagged with both the version number and `latest`, then pushed to production ECR.
+  </Step>
+  <Step title="Update state">
+    `.sync-state.json` is updated and auto-committed so unchanged images are not re-pushed on the next cycle.
+  </Step>
+</Steps>
+
+## Manifest configuration
+
+Images to sync are defined in `manifest.yml`:
+
+```yaml
+registries:
+  production:
+    account_id: "472638764647"
+    region: us-gov-west-1
+
+images:
+  - source: ghcr.io/shebashio/ezrmf-backend
+    ecr_repo: ezrmf-backend
+
+  - source: ghcr.io/shebashio/ezrmf-frontend
+    ecr_repo: ezrmf-frontend
+
+  - source: ghcr.io/shebashio/frontend-rmf-manager
+    ecr_repo: frontend-rmf-manager
+
+  - source: ghcr.io/shebashio/stigmate
+    ecr_repo: stigmate
+```
+
+### Adding a new image
+
+1. Add an entry under `images:` in `manifest.yml` with the GHCR source and ECR repository name
+2. Commit and push — the next sync cycle picks it up automatically
+
+## Manual sync
+
+You can trigger a sync manually from the GitHub Actions UI (workflow_dispatch) with optional filters for a specific image or tag. You can also run the script directly:
+
+```bash
+# Sync all images
+./scripts/sync-images.sh
+
+# Sync a specific image and tag
+./scripts/sync-images.sh --image ezrmf-backend --tag 1.2.3
+
+# Dry run (no actual push)
+./scripts/sync-images.sh --dry-run
+```
+
+## State tracking
+
+The file `.sync-state.json` tracks the last successfully synced tag for each image:
+
+```json
+{
+  "ezrmf-backend": "1.0.1",
+  "ezrmf-frontend": "1.0.1",
+  "frontend-rmf-manager": "1.0.1",
+  "stigmate": "1.1.2"
+}
+```
+
+This prevents re-pulling and re-pushing images that haven't changed. The workflow auto-commits state updates after each sync with `[skip ci]` to avoid retriggering itself.
+
+## Required secrets and configuration
+
+| Secret | Description |
+|---|---|
+| `GHCR_TOKEN` | GitHub PAT with `read:packages` scope on github.com/shebashio |
+| `APP_ID_SHEBASHGOV_PROD_APP` | GitHub App ID for state file commits |
+| `PRIVATE_KEY_SHEBASHGOV_PROD_APP` | GitHub App private key |
+
+The runner authenticates to AWS via OIDC — no static AWS credentials are stored as secrets.
+
+## Repository structure
+
+```
+shebashio/image-sync/
+├── manifest.yml              # Image source → ECR mapping
+├── .sync-state.json          # Last synced tag per image
+├── scripts/
+│   └── sync-images.sh        # Manual sync script
+└── .github/workflows/
+    └── sync-images.yml        # Automated sync (every 5 min)
+```
