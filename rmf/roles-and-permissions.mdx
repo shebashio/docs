@@ -1,12 +1,12 @@
 ---
 title: "Roles and permissions"
-description: "Understand RMF's five DoD-aligned RBAC roles, the permission matrix, and OIDC authentication with Ping Identity"
+description: "Understand ezRMF's seven DoD-aligned RBAC roles, the permission matrix, and authentication options"
 sidebarTitle: "Roles and permissions"
 ---
 
 ## Overview
 
-RMF uses role-based access control (RBAC) with five DoD-aligned roles. Each role has specific permissions that determine what actions a user can perform within a project. Roles are assigned per project, so a user can hold different roles across different projects.
+ezRMF uses role-based access control (RBAC) with seven DoD-aligned roles. Each role has specific permissions that determine what actions a user can perform within a project. Roles are assigned per project, so a user can hold different roles across different projects.
 
 ## Roles
 
@@ -14,40 +14,47 @@ RMF uses role-based access control (RBAC) with five DoD-aligned roles. Each role
 |------|-------------|-------------|
 | **Program Manager** | PM | Manages the overall ATO project, creates projects, assigns team members, and tracks milestones |
 | **Information System Security Manager** | ISSM | Oversees security controls, reviews and approves evidence, manages policies |
-| **Security Control Assessor** | SCA | Independently assesses control implementation, validates evidence, conducts security testing |
 | **Information System Security Officer** | ISSO | Handles day-to-day security operations, uploads evidence, documents control implementations |
+| **Security Control Assessor** | SCA | Independently assesses control implementation, validates evidence, conducts security testing |
+| **Security Control Assessor Representative** | SCAR | Supports the SCA in assessment activities under their direction |
 | **Authorizing Official** | AO | Makes the final authorization decision based on the security package |
+| **Engineer** | Engineer | Performs technical implementation and security engineering tasks |
 
 ```mermaid
 flowchart TB
     AO["AO: Authorizing Official"] --> ISSM["ISSM: Security Manager"]
     AO --> SCA["SCA: Control Assessor"]
+    SCA --> SCAR["SCAR: Assessor Rep"]
     ISSM --> ISSO["ISSO: Security Officer"]
     PM["PM: Program Manager"] --> ISSO
     PM --> ISSM
+    ISSO --> ENG["Engineer"]
 ```
 
 ## Permission matrix
 
 The following table shows which actions each role can perform. Permissions are enforced at the API level — the UI only displays actions available to the current user's role.
 
-| Action | PM | ISSM | SCA | ISSO | AO |
-|--------|:--:|:----:|:---:|:----:|:--:|
-| Create project | Yes | No | No | No | No |
-| Edit project settings | Yes | Yes | No | No | No |
-| Assign team members | Yes | No | No | No | No |
-| Advance project state | Yes | Yes | Yes | No | Yes |
-| View controls | Yes | Yes | Yes | Yes | Yes |
-| Edit control status | No | Yes | No | Yes | No |
-| Edit implementation statements | No | Yes | No | Yes | No |
-| Upload evidence | No | No | No | Yes | No |
-| Review evidence (ISSM stage) | No | Yes | No | No | No |
-| Review evidence (SCA stage) | No | No | Yes | No | No |
-| Approve final authorization | No | No | No | No | Yes |
-| View activity log | Yes | Yes | Yes | Yes | Yes |
-| Create API tokens | Yes | Yes | Yes | Yes | No |
-| Manage policies | No | Yes | No | No | No |
-| Generate reports | Yes | Yes | Yes | No | Yes |
+| Action | PM | ISSM | ISSO | SCA | SCAR | AO | Engineer |
+|--------|:--:|:----:|:----:|:---:|:----:|:--:|:--------:|
+| Create project | Yes | No | No | No | No | No | No |
+| Edit project settings | Yes | Yes | No | No | No | No | No |
+| Assign team members | Yes | No | No | No | No | No | No |
+| Advance project phase | Yes | Yes | No | Yes | No | Yes | No |
+| View controls | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Edit control status | No | Yes | Yes | No | No | No | Yes |
+| Edit implementation statements | No | Yes | Yes | No | No | No | Yes |
+| Upload evidence | No | No | Yes | No | No | No | Yes |
+| Review evidence (ISSM stage) | No | Yes | No | No | No | No | No |
+| Review evidence (SCA stage) | No | No | No | Yes | Yes | No | No |
+| Approve final authorization | No | No | No | No | No | Yes | No |
+| View audit log | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| Create API tokens | Yes | Yes | Yes | Yes | Yes | No | Yes |
+| Manage policies | No | Yes | No | No | No | No | No |
+| Generate reports | Yes | Yes | No | Yes | No | Yes | No |
+| Use AI agent chat | Yes | Yes | Yes | Yes | Yes | No | Yes |
+| Manage skills | No | Yes | Yes | No | No | No | Yes |
+| Manage integrations | No | Yes | No | No | No | No | Yes |
 
 <Info>
 The AO role is intentionally restricted from day-to-day operations like uploading evidence or editing controls. This maintains the separation of duties required by the RMF process — the AO makes authorization decisions based on the work of others, not their own.
@@ -59,7 +66,7 @@ Roles are assigned per project by the Program Manager (PM). A user must be added
 
 ### Assign a role
 
-1. Open the project and navigate to the **Team** tab
+1. Open the project and navigate to the **Team** panel
 2. Click **Add Member**
 3. Search for the user by name or email
 4. Select the role from the dropdown
@@ -67,7 +74,7 @@ Roles are assigned per project by the Program Manager (PM). A user must be added
 
 ### Change a role
 
-1. Open the **Team** tab
+1. Open the **Team** panel
 2. Find the team member and click **Edit**
 3. Select the new role
 4. Click **Save**
@@ -78,61 +85,65 @@ Changing a user's role takes effect immediately. Any actions they were in the pr
 
 ### Remove a team member
 
-1. Open the **Team** tab
+1. Open the **Team** panel
 2. Find the team member and click **Remove**
 3. Confirm the removal
 
 Removed users lose all access to the project. Their historical activity records remain in the audit log.
 
-## Authentication with Ping Identity
+## Authentication
 
-RMF authenticates users through OIDC with Ping Identity. When you access RMF, you are redirected to Ping Identity for authentication. After successful login, Ping Identity returns an identity token that RMF uses to identify you and determine your role.
+ezRMF supports multiple authentication methods through OIDC.
+
+| Provider | Description |
+|----------|-------------|
+| **Ping Identity** | Primary OIDC provider for DEDZED platform |
+| **Cloudflare Access** | Zero-trust network access with OIDC |
+| **Generic OIDC / SSO** | Any OIDC-compliant identity provider |
 
 ### Authentication flow
 
 ```mermaid
 sequenceDiagram
     participant User as User Browser
-    participant RMF as RMF
-    participant Ping as Ping Identity
+    participant ezRMF as ezRMF
+    participant IDP as Identity Provider
 
-    User->>RMF: Access rmf.icbm.dev
-    RMF->>Ping: Redirect to OIDC authorize
-    Ping->>User: Login page
-    User->>Ping: Enter credentials
-    Ping->>RMF: Authorization code
-    RMF->>Ping: Exchange code for tokens
-    Ping->>RMF: ID token + access token
-    RMF->>RMF: Map groups to roles
-    RMF->>User: Authenticated session
+    User->>ezRMF: Access rmf.icbm.dev
+    ezRMF->>IDP: Redirect to OIDC authorize
+    IDP->>User: Login page
+    User->>IDP: Enter credentials
+    IDP->>ezRMF: Authorization code
+    ezRMF->>IDP: Exchange code for tokens
+    IDP->>ezRMF: ID token + access token
+    ezRMF->>ezRMF: Map groups to roles
+    ezRMF->>User: Authenticated session
 ```
 
 ### Group-to-role mapping
 
-RMF maps Ping Identity groups to RBAC roles. When a user authenticates, RMF reads their group memberships from the identity token and assigns the corresponding role within each project.
+ezRMF maps identity provider groups to RBAC roles. When a user authenticates, ezRMF reads their group memberships from the identity token and assigns the corresponding role within each project.
 
-| Ping Identity group | RMF role |
-|---------------------|----------|
+| Identity provider group | ezRMF role |
+|-------------------------|------------|
 | `rmf-pm` | PM |
 | `rmf-issm` | ISSM |
-| `rmf-sca` | SCA |
 | `rmf-isso` | ISSO |
+| `rmf-sca` | SCA |
+| `rmf-scar` | SCAR |
 | `rmf-ao` | AO |
+| `rmf-engineer` | Engineer |
 
 <Tip>
-A user can belong to multiple Ping Identity groups if they hold different roles across different projects. The effective role is determined by the project-level team assignment, not solely by the Ping Identity group.
+A user can belong to multiple groups if they hold different roles across different projects. The effective role is determined by the project-level team assignment, not solely by the identity provider group.
 </Tip>
-
-### JWT bearer tokens for API access
-
-For programmatic access, RMF supports JWT bearer tokens. You can generate scoped API tokens from the RMF UI or through the API. See [API reference](/rmf/api-reference) for details on token creation and usage.
 
 ## Separation of duties
 
-The RMF role model enforces separation of duties as required by DoD policy:
+The ezRMF role model enforces separation of duties as required by DoD policy:
 
-- The person who **implements** a control (ISSO) cannot **assess** it (SCA)
-- The person who **assesses** a control (SCA) cannot **authorize** the system (AO)
+- The person who **implements** a control (ISSO/Engineer) cannot **assess** it (SCA/SCAR)
+- The person who **assesses** a control (SCA/SCAR) cannot **authorize** the system (AO)
 - The person who **authorizes** the system (AO) does not perform operational tasks
 
 This separation ensures that no single individual can implement, assess, and authorize a control without independent review.
@@ -141,7 +152,7 @@ This separation ensures that no single individual can implement, assess, and aut
 
 <CardGroup cols={2}>
   <Card title="Getting started" icon="rocket" href="/rmf/getting-started">
-    Configure OIDC and assign your first team.
+    Configure authentication and assign your first team.
   </Card>
   <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
     Understand the evidence approval workflow across roles.
@@ -149,7 +160,7 @@ This separation ensures that no single individual can implement, assess, and aut
   <Card title="API reference" icon="code" href="/rmf/api-reference">
     Create scoped API tokens for programmatic access.
   </Card>
-  <Card title="Before you begin" icon="circle-check" href="/getting-started/before-you-begin">
-    Ping Identity enrollment and platform prerequisites.
+  <Card title="Projects" icon="folder-open" href="/rmf/projects">
+    Manage ATO projects and team assignments.
   </Card>
 </CardGroup>

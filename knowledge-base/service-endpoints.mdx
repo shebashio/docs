@@ -21,9 +21,9 @@ These services are accessible only from within a Kasm VDI session.
 |---------|-----|---------|
 | Shredder | [shredder.icbm.dev](https://shredder.icbm.dev) | Multi-engine security scanning with quality gates |
 | STIGMATE | [stigmate.icbm.dev](https://stigmate.icbm.dev) | AI-powered STIG compliance scanning |
-| RMF | [rmf.icbm.dev](https://rmf.icbm.dev) | Risk Management Framework and ATO tracking |
-| RMF API | `rmf.icbm.dev/api/v1` | RESTful API for RMF data |
-| RMF MCP | `rmf.icbm.dev:8001/sse` | Model Context Protocol server for AI tool integration |
+| ezRMF | [rmf.icbm.dev](https://rmf.icbm.dev) | AI-powered NIST RMF compliance and ATO tracking |
+| ezRMF API | `rmf.icbm.dev/api` | RESTful API for ezRMF data |
+| ezRMF MCP | `rmf.icbm.dev:8001/projects/:id/mcp/sse` | Model Context Protocol server with 30+ compliance tools |
 
 ## Authentication
 
@@ -34,5 +34,5 @@ All services authenticate through **Ping Identity**. Initial sign-in requires a 
 DEDZED uses a [zero trust access model](/knowledge-base/zero-trust) — no VPN is required. All external access flows through AWS Verified Access, which authenticates every connection before granting access to platform services.
 
 <Info>
-Internal services (Shredder, STIGMATE, RMF) are not accessible from outside a Kasm session. Start a Kasm VDI session first, then navigate to the service URL within the session browser.
+Internal services (Shredder, STIGMATE, ezRMF) are not accessible from outside a Kasm session. Start a Kasm VDI session first, then navigate to the service URL within the session browser.
 </Info>

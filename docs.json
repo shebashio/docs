@@ -90,10 +90,10 @@
         ]
       },
       {
-        "tab": "RMF",
+        "tab": "ezRMF",
         "groups": [
           {
-            "group": "RMF",
+            "group": "ezRMF",
             "pages": [
               "rmf/index",
               "rmf/concepts",
@@ -105,15 +105,24 @@
             "pages": [
               "rmf/projects",
               "rmf/controls",
-              "rmf/evidence"
+              "rmf/evidence",
+              "rmf/poam"
+            ]
+          },
+          {
+            "group": "AI agent",
+            "pages": [
+              "rmf/agent",
+              "rmf/skills",
+              "rmf/mcp-integration"
             ]
           },
           {
             "group": "Reference",
             "pages": [
               "rmf/roles-and-permissions",
-              "rmf/api-reference",
-              "rmf/mcp-integration"
+              "rmf/integrations",
+              "rmf/api-reference"
             ]
           }
         ]

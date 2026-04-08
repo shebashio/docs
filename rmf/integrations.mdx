@@ -1,0 +1,108 @@
+---
+title: "Integrations"
+description: "Connect ezRMF to AWS Security Hub, GuardDuty, and third-party scanners for continuous compliance monitoring"
+sidebarTitle: "Integrations"
+---
+
+## Overview
+
+ezRMF integrates with external security tools to pull findings into your compliance workspace automatically. Findings from AWS Security Hub, GuardDuty, and third-party scanners are auto-mapped to NIST 800-53 controls and tracked in real time, enabling continuous compliance monitoring without manual data entry.
+
+## AWS Security Hub
+
+AWS Security Hub aggregates security findings from multiple AWS services and third-party tools. ezRMF syncs these findings and maps them to your project's NIST 800-53 controls.
+
+### Connect Security Hub
+
+1. Navigate to the **Integrations** panel in your project
+2. Click **Add Integration** and select **AWS Security Hub**
+3. Enter your AWS credentials or IAM role ARN
+4. Select the AWS region(s) to monitor
+5. Click **Connect**
+
+### How findings are mapped
+
+When ezRMF syncs findings from Security Hub:
+
+1. Each finding's compliance standard references are extracted
+2. References are matched to NIST 800-53 controls in your project
+3. Matched findings appear as evidence or POAM items depending on severity
+4. Finding status updates sync automatically on a configurable interval
+
+| Security Hub status | ezRMF action |
+|---------------------|-------------|
+| **PASSED** | Creates positive evidence for the mapped control |
+| **FAILED** | Creates a POAM item linked to the mapped control |
+| **WARNING** | Creates a POAM item with medium severity |
+| **NOT_AVAILABLE** | Logged but no automatic action |
+
+## AWS GuardDuty
+
+GuardDuty provides threat detection findings for your AWS environment. ezRMF maps GuardDuty findings to incident response and monitoring controls.
+
+### Connect GuardDuty
+
+1. Navigate to the **Integrations** panel
+2. Click **Add Integration** and select **AWS GuardDuty**
+3. Enter your AWS credentials or IAM role ARN
+4. Select the AWS region(s) to monitor
+5. Click **Connect**
+
+GuardDuty findings map primarily to the following control families:
+
+- **IR** (Incident Response) — Active threat detections
+- **SI** (System and Information Integrity) — Malware and anomaly findings
+- **AU** (Audit and Accountability) — Logging and monitoring coverage
+
+## Third-party scanners
+
+ezRMF supports importing findings from third-party vulnerability scanners and compliance tools. Supported import formats include:
+
+| Format | Source |
+|--------|--------|
+| CKL | STIGMATE, STIG Viewer |
+| XCCDF | OpenSCAP, SCC |
+| CSV | Generic scanner export |
+| JSON | Custom integrations |
+
+### Import scanner findings
+
+```bash
+curl -X POST https://rmf.icbm.dev/api/projects/{id}/integrations/import \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@scan-results.csv" \
+  -F "source=vulnerability-scanner" \
+  -F "format=csv"
+```
+
+## Sync configuration
+
+Integration syncs run on a configurable interval. You can adjust the frequency from the **Integrations** panel or through environment variables:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `INTEGRATION_SYNC_INTERVAL` | 60 minutes | How often to pull new findings |
+| `INTEGRATION_AUTO_MAP` | true | Automatically map findings to controls |
+| `INTEGRATION_AUTO_POAM` | false | Automatically create POAM items for failed findings |
+
+<Tip>
+Enable `INTEGRATION_AUTO_POAM` only after you have validated that the automatic control mappings are accurate for your environment. Review the initial sync results manually before turning on automatic POAM creation.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Controls" icon="list-check" href="/rmf/controls">
+    View controls with integration-sourced evidence.
+  </Card>
+  <Card title="POAM" icon="clipboard-list" href="/rmf/poam">
+    Track findings from integrations as POAM items.
+  </Card>
+  <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
+    Integration findings appear as evidence artifacts.
+  </Card>
+  <Card title="Getting started" icon="rocket" href="/rmf/getting-started">
+    Deploy ezRMF and configure your environment.
+  </Card>
+</CardGroup>

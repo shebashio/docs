@@ -1,0 +1,133 @@
+---
+title: "Skills system"
+description: "Extend the ezRMF AI agent with custom Markdown-based automation workflows — no code changes required"
+sidebarTitle: "Skills"
+---
+
+## Overview
+
+The Skills system lets you teach the ezRMF AI agent new workflows by dropping a Markdown file into your project. Skills are custom automation recipes that the agent loads automatically — no code changes, no deployments, no restarts.
+
+## How skills work
+
+A skill is a Markdown file with YAML frontmatter that defines a workflow the agent can execute. When a user invokes a skill (or the agent determines one is relevant), the skill's instructions guide the agent's behavior for that task.
+
+Skills are discovered through a four-tier priority system:
+
+| Priority | Location | Scope |
+|----------|----------|-------|
+| **1 (highest)** | Project-level skills | Available only within the specific project |
+| **2** | User-level skills | Available to a specific user across projects |
+| **3** | Organization-level skills | Available to all users in the organization |
+| **4 (lowest)** | System-level skills | Built-in skills shipped with ezRMF |
+
+Higher-priority skills override lower-priority skills with the same name.
+
+## Create a skill
+
+### 1. Write the skill file
+
+Create a Markdown file with YAML frontmatter:
+
+```markdown
+---
+name: gap-analysis
+description: Run a comprehensive evidence gap analysis and generate a prioritized remediation plan
+---
+
+## Instructions
+
+1. Use the `analyze_evidence_gaps` tool to identify all controls
+   without sufficient evidence
+2. Group gaps by control family and severity
+3. For each high-priority gap, suggest specific evidence
+   artifacts that would satisfy the control
+4. Generate a remediation plan with estimated effort levels
+5. Format the output as a table with columns:
+   Control ID, Gap Type, Priority, Suggested Evidence, Effort
+
+## Output format
+
+Present results as a Markdown table followed by a summary
+paragraph with the total gap count and recommended next steps.
+```
+
+### 2. Upload the skill
+
+Navigate to the **Skills** panel in your project and click **Upload Skill**, or upload the file through the API:
+
+```bash
+curl -X POST https://rmf.icbm.dev/api/projects/{id}/skills \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@gap-analysis.md"
+```
+
+### 3. Use the skill
+
+In the chat interface, ask the agent to run your skill:
+
+```
+User: Run the gap-analysis skill for this project.
+
+Agent: [loads gap-analysis skill]
+       [calls analyze_evidence_gaps tool]
+       [generates remediation plan]
+
+Here's the gap analysis for "Mission App ATO":
+...
+```
+
+## Built-in skills
+
+ezRMF ships with several built-in skills for common compliance workflows:
+
+| Skill | Description |
+|-------|-------------|
+| **gap-analysis** | Identify evidence gaps and generate prioritized remediation plans |
+| **ssp-import** | Parse and import System Security Plan documents |
+| **control-narrative** | Draft implementation statements for controls |
+| **policy-generator** | Generate policy documents mapped to control families |
+| **emass-export** | Prepare and export eMASS-formatted audit packages |
+| **cci-assessment** | Run CCI-level compliance assessment with test results |
+
+## Skill management
+
+### View skills
+
+Navigate to the **Skills** panel to see all skills available to the current project, organized by priority tier.
+
+### Edit a skill
+
+1. Open the skill detail view
+2. Edit the Markdown content
+3. Click **Save**
+
+Changes take effect immediately for new agent sessions.
+
+### Delete a skill
+
+1. Open the skill detail view
+2. Click **Delete**
+3. Confirm the deletion
+
+<Info>
+You cannot delete system-level built-in skills. You can override them by creating a project-level skill with the same name.
+</Info>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="AI agent" icon="robot" href="/rmf/agent">
+    Learn how the agent executes skills in the sandbox.
+  </Card>
+  <Card title="MCP integration" icon="plug" href="/rmf/mcp-integration">
+    Browse the MCP tools available to skills.
+  </Card>
+  <Card title="Controls" icon="list-check" href="/rmf/controls">
+    Manage controls that skills analyze and update.
+  </Card>
+  <Card title="Projects" icon="folder-open" href="/rmf/projects">
+    Manage project-level skill configurations.
+  </Card>
+</CardGroup>

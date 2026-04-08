@@ -48,7 +48,7 @@ See [Self-registration: CAC issues](/getting-started/self-registration#troublesh
 | WAF | Raw `403` with no HTML | Rate limited | Check WAF CloudWatch metrics, adjust threshold if needed |
 | ALB | Plain text "Access denied" | Non-desktop path blocked | Check if path matches `/desktop/*` |
 | Nginx | HTML-formatted 403 | Kasm agent auth failing | Check that `session_token` cookie is being sent |
-| RMF API | JSON error response | Insufficient role permissions | Verify your role has the required permission for the action. See [Roles and permissions](/rmf/roles-and-permissions) |
+| ezRMF API | JSON error response | Insufficient role permissions | Verify your role has the required permission for the action. See [Roles and permissions](/rmf/roles-and-permissions) |
 
 See [Zero trust: Troubleshooting](/knowledge-base/zero-trust#troubleshooting) for the full WAF/ALB/nginx breakdown.
 
@@ -149,7 +149,7 @@ See [STIGMATE API reference](/stigmate/api-reference#error-responses) for respon
 
 ---
 
-## RMF
+## ezRMF
 
 ### Permission denied on API requests
 
@@ -176,7 +176,7 @@ See [STIGMATE API reference](/stigmate/api-reference#error-responses) for respon
 | `429` | Rate limit exceeded | Wait and retry |
 | `500` | Internal server error | Contact support |
 
-See [RMF API reference](/rmf/api-reference#error-handling) for error response format details.
+See [ezRMF API reference](/rmf/api-reference#error-handling) for error response format details.
 
 ---
 

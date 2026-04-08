@@ -1,33 +1,33 @@
 ---
-title: "Getting started with RMF"
-description: "Deploy RMF with Docker Compose, configure OIDC authentication, and create your first ATO project"
+title: "Getting started with ezRMF"
+description: "Deploy ezRMF with Docker Compose, configure authentication, and create your first ATO project"
 sidebarTitle: "Getting started"
 ---
 
 ## Prerequisites
 
-Before deploying RMF, ensure you have the following:
+Before deploying ezRMF, ensure you have the following:
 
 | Requirement | Details |
 |------------|---------|
 | **Docker** | Docker Engine 24+ and Docker Compose v2 |
-| **Node.js** | Node.js 18+ (for CLI tooling) |
-| **OIDC provider** | Ping Identity tenant with client credentials |
+| **Node.js** | Node.js 18+ (backend runtime) |
+| **OIDC provider** | Ping Identity, Cloudflare Access, or any OIDC-compatible provider |
 | **Network access** | Access to the DEDZED platform via [Kasm session](/kasm-workspaces/working-within-kasm) |
 
 <Info>
-RMF uses Ping Identity for authentication. If you do not yet have a Ping Identity account, see [Before you begin](/getting-started/before-you-begin) for enrollment instructions.
+ezRMF supports multiple authentication providers including Ping Identity, Cloudflare Access, and generic OIDC/SSO. If you do not yet have credentials configured, see [Before you begin](/getting-started/before-you-begin) for enrollment instructions.
 </Info>
 
 ## Deploy with Docker Compose
 
-RMF ships as a Docker Compose stack with environment-based profiles. Clone the repository and configure your environment variables before starting the services.
+ezRMF ships as a Docker Compose stack. Clone the repository and configure your environment variables before starting the services.
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/shebashio/rmf.git
-cd rmf
+git clone https://github.com/shebashio/ezrmf.git
+cd ezrmf
 ```
 
 ### 2. Configure environment variables
@@ -42,26 +42,28 @@ Edit `.env` with the following required variables:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://rmf:rmf_password@db:5432/rmf
+DATABASE_URL=postgresql://ezrmf:ezrmf_password@db:5432/ezrmf
 
-# Redis
-REDIS_URL=redis://redis:6379/0
+# File storage (MinIO)
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=your-access-key
+MINIO_SECRET_KEY=your-secret-key
 
-# OIDC Authentication (Ping Identity)
+# OIDC Authentication
 OIDC_DISCOVERY_URL=https://auth.pingone.com/<environment-id>/as/.well-known/openid-configuration
 OIDC_CLIENT_ID=your-client-id
 OIDC_CLIENT_SECRET=your-client-secret
 
+# AI Agent
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
 # Activity tracking
 ACTIVITY_RETENTION_DAYS=365
-
-# API tokens
-DEFAULT_TOKEN_EXPIRY_DAYS=30
-MAX_TOKENS_PER_USER=10
 ```
 
 <Warning>
-Never commit your `.env` file to version control. The file contains secrets including your OIDC client credentials and database passwords.
+Never commit your `.env` file to version control. The file contains secrets including your OIDC client credentials, database passwords, and API keys.
 </Warning>
 
 ### 3. Start the services
@@ -70,14 +72,14 @@ Never commit your `.env` file to version control. The file contains secrets incl
 docker compose up -d
 ```
 
-This starts four containers:
+This starts the following containers:
 
 | Container | Port | Purpose |
 |-----------|------|---------|
-| `rmf-api` | 8000 | FastAPI application server |
-| `rmf-mcp` | 8001 | MCP server for AI integration |
-| `rmf-db` | 5432 | PostgreSQL 15 database |
-| `rmf-redis` | 6379 | Redis cache and session store |
+| `ezrmf-api` | 8000 | Express application server (REST API) |
+| `ezrmf-mcp` | 8001 | MCP server for AI tool integration |
+| `ezrmf-db` | 5432 | PostgreSQL 16 database with pgvector |
+| `ezrmf-minio` | 9000 | MinIO object storage (S3-compatible) |
 
 ### 4. Verify the deployment
 
@@ -95,11 +97,11 @@ curl http://localhost:8000/api/v1/health
 
 You should receive a `200 OK` response with the service status.
 
-## Configure OIDC with Ping Identity
+## Configure authentication
 
-RMF authenticates users through OIDC with Ping Identity. You need to register RMF as a client application in your Ping Identity environment.
+ezRMF authenticates users through OIDC. You can use Ping Identity, Cloudflare Access, or any OIDC-compatible provider.
 
-### 1. Create an OIDC application
+### Option A: Ping Identity
 
 In your Ping Identity admin console:
 
@@ -109,33 +111,41 @@ In your Ping Identity admin console:
 4. Enable the following scopes: `openid`, `profile`, `email`
 5. Save the application and note the **Client ID** and **Client Secret**
 
-### 2. Configure role mapping
+### Option B: Cloudflare Access
 
-RMF maps Ping Identity groups to RMF roles. Create the following groups in Ping Identity and assign users:
+Configure Cloudflare Access with an OIDC application pointing to your ezRMF instance. Set the redirect URI to `https://rmf.icbm.dev/auth/callback`.
 
-| Ping Identity group | RMF role | Description |
-|---------------------|----------|-------------|
+### Option C: Generic OIDC / SSO
+
+Any OIDC-compliant identity provider works. Set the `OIDC_DISCOVERY_URL`, `OIDC_CLIENT_ID`, and `OIDC_CLIENT_SECRET` in your `.env` file.
+
+### Configure role mapping
+
+ezRMF maps identity provider groups to ezRMF roles. Create the following groups and assign users:
+
+| Identity provider group | ezRMF role | Description |
+|-------------------------|------------|-------------|
 | `rmf-pm` | PM | Program Manager |
 | `rmf-issm` | ISSM | Information System Security Manager |
-| `rmf-sca` | SCA | Security Control Assessor |
 | `rmf-isso` | ISSO | Information System Security Officer |
+| `rmf-sca` | SCA | Security Control Assessor |
+| `rmf-scar` | SCAR | Security Control Assessor Representative |
 | `rmf-ao` | AO | Authorizing Official |
+| `rmf-engineer` | Engineer | Security Engineer |
 
-### 3. Update environment variables
-
-Set the `OIDC_DISCOVERY_URL`, `OIDC_CLIENT_ID`, and `OIDC_CLIENT_SECRET` in your `.env` file with the values from step 1, then restart the API:
+After updating environment variables, restart the API:
 
 ```bash
-docker compose restart rmf-api
+docker compose restart ezrmf-api
 ```
 
 ## Create your first project
 
-Once RMF is deployed and OIDC is configured, you can create your first ATO project.
+Once ezRMF is deployed and authentication is configured, you can create your first ATO project.
 
-### 1. Log in to RMF
+### 1. Log in to ezRMF
 
-Navigate to `https://rmf.icbm.dev` in your Kasm browser session. You are redirected to Ping Identity for authentication. After logging in, you land on the RMF dashboard.
+Navigate to `https://rmf.icbm.dev` in your Kasm browser session. You are redirected to your identity provider for authentication. After logging in, you land on the ezRMF dashboard.
 
 ### 2. Create a project
 
@@ -145,45 +155,60 @@ Navigate to `https://rmf.icbm.dev` in your Kasm browser session. You are redirec
 4. Set the target ATO date
 5. Click **Create**
 
-RMF automatically populates the project with the appropriate NIST 800-53 control baseline based on the selected impact level.
+ezRMF automatically populates the project with the appropriate NIST 800-53 control baseline based on the selected impact level.
 
 ### 3. Assign team members
 
-1. Open the project and navigate to the **Team** tab
+1. Open the project and navigate to the **Team** panel
 2. Click **Add Member**
 3. Search for users by name or email
-4. Assign each team member a role (PM, ISSM, SCA, ISSO, or AO)
+4. Assign each team member a role (PM, ISSM, ISSO, SCA, SCAR, AO, or Engineer)
 5. Click **Save**
 
 <Tip>
 Assign at least one user to each role to enable the full evidence approval workflow. See [Roles and permissions](/rmf/roles-and-permissions) for details on what each role can do.
 </Tip>
 
-### 4. Review the control baseline
+### 4. Import your SSP
 
-Navigate to the **Controls** tab to see the automatically selected controls. From here you can:
+Use the AI agent to import an existing System Security Plan:
+
+1. Open the project **Chat** panel
+2. Upload your SSP document (DOCX or PDF)
+3. Ask the agent to parse and extract control implementations
+4. Review the agent's proposed control mappings
+5. Approve or edit the mappings
+
+The agent reads the document, extracts control implementation statements, maps them to NIST 800-53 controls and DoD CCIs, and populates your compliance workspace.
+
+### 5. Review the control baseline
+
+Navigate to the **Controls** panel to see the automatically selected controls. From here you can:
 
 - View control details and implementation guidance
 - Mark controls as **Implemented**, **Partially Implemented**, or **Not Implemented**
 - Add implementation statements describing how each control is satisfied
+- Adjust Organization-Defined Parameters (ODPs)
 
-### 5. Upload your first evidence artifact
+### 6. Upload your first evidence artifact
 
-1. Navigate to the **Evidence** tab
+1. Navigate to the **BoE** (Body of Evidence) panel
 2. Click **Upload Evidence**
 3. Select a file (e.g., a CKL export from STIGMATE, a policy document, or a screenshot)
 4. Add a description and select the control(s) this evidence supports
 5. Click **Upload**
 
-The evidence enters the approval workflow and routes to the ISSM for review.
+The evidence enters the approval workflow and routes to the ISSM for review. You can preview uploaded files directly in the browser.
 
 ## Next steps
 
-You now have a running RMF instance with your first project configured. Continue with these guides:
+You now have a running ezRMF instance with your first project configured. Continue with these guides:
 
 - [Projects](/rmf/projects) — Learn about ATO workflow states and activity tracking
 - [Controls](/rmf/controls) — Work with the NIST 800-53 control catalog
-- [Evidence](/rmf/evidence) — Understand the evidence approval workflow
+- [Evidence](/rmf/evidence) — Understand the Body of Evidence workflow
+- [AI agent](/rmf/agent) — Learn how the sandboxed AI agent works
+- [POAM](/rmf/poam) — Track remediation items and export to eMASS
 
 ## Related pages
 
@@ -194,10 +219,10 @@ You now have a running RMF instance with your first project configured. Continue
   <Card title="Roles and permissions" icon="users" href="/rmf/roles-and-permissions">
     Understand RBAC roles and permission scoping.
   </Card>
-  <Card title="Before you begin" icon="circle-check" href="/getting-started/before-you-begin">
-    DEDZED platform prerequisites and enrollment.
+  <Card title="AI agent" icon="robot" href="/rmf/agent">
+    Sandboxed agent execution and chat interface.
   </Card>
   <Card title="API reference" icon="code" href="/rmf/api-reference">
-    Automate RMF workflows with the REST API.
+    Automate ezRMF workflows with the REST API.
   </Card>
 </CardGroup>

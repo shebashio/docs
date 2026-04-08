@@ -1,12 +1,12 @@
 ---
 title: "API reference"
-description: "REST API endpoints, scoped API tokens, request and response examples, pagination, and error handling"
+description: "REST API endpoints, authentication, route tree, request and response examples, pagination, and error handling"
 sidebarTitle: "API reference"
 ---
 
 ## Overview
 
-RMF provides a REST API for programmatic access to all platform features. The API uses JSON request and response bodies, standard HTTP methods, and Bearer token authentication. The base URL for all endpoints is `https://rmf.icbm.dev/api/v1`.
+ezRMF provides a REST API for programmatic access to all platform features. The API uses JSON request and response bodies, standard HTTP methods, and Bearer token authentication. The base URL for all endpoints is `https://rmf.icbm.dev/api`.
 
 ## Authentication
 
@@ -17,7 +17,7 @@ The API supports two authentication methods:
 | **OIDC session** | Browser-based access | Automatic (cookie-based) |
 | **API token** | Programmatic access, CI/CD, automation | `Authorization: Bearer <token>` |
 
-### Scoped API tokens
+### API tokens
 
 API tokens provide programmatic access with granular permissions. Each token is scoped to a specific set of operations.
 
@@ -31,7 +31,7 @@ API tokens provide programmatic access with granular permissions. Each token is 
 #### Create a token
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/v1/tokens \
+curl -X POST https://rmf.icbm.dev/api/tokens \
   -H "Authorization: Bearer $SESSION_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -41,80 +41,54 @@ curl -X POST https://rmf.icbm.dev/api/v1/tokens \
   }'
 ```
 
-**Response:**
-
-```json
-{
-  "id": "tok_abc123",
-  "name": "ci-pipeline-token",
-  "token": "rmf_live_xxxxxxxxxxxxxxxx",
-  "scopes": ["read", "upload", "link"],
-  "expires_at": "2026-03-30T00:00:00Z",
-  "created_at": "2026-02-28T12:00:00Z"
-}
-```
-
 <Warning>
 The `token` value is only returned once at creation time. Store it securely — you cannot retrieve it again. If lost, revoke the token and create a new one.
 </Warning>
 
-#### List tokens
+## Route tree
 
-```bash
-curl https://rmf.icbm.dev/api/v1/tokens \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+The complete API route tree:
+
 ```
-
-#### Revoke a token
-
-```bash
-curl -X DELETE https://rmf.icbm.dev/api/v1/tokens/{tid} \
-  -H "Authorization: Bearer $SESSION_TOKEN"
+/api/auth                           # OIDC login/callback/logout
+/api/chat                           # POST message, SSE stream
+/api/me                             # Current user info
+/api/nist                           # NIST 800-53 catalog API
+/api/projects                       # CRUD projects
+  /:id/conversations                # Chat history
+  /:id/data/controls                # NIST controls
+  /:id/data/inventory               # HW/SW items
+  /:id/data/stakeholders            # Team roles
+  /:id/data/poam                    # Findings
+  /:id/data/system-info             # System characteristics
+  /:id/data/relationships           # Mindmap
+  /:id/boe                          # Evidence files
+  /:id/emass                        # CCI assessment and export
+  /:id/pipeline                     # RMF 7-phase tracking
+  /:id/baselines                    # Control baselines
+  /:id/skills                       # Agent skills
+  /:id/agents                       # Agent configs
+  /:id/memories                     # Persistent agent context
+  /:id/integrations                 # AWS sync
+  /:id/audit-log                    # Change trail
+  /:id/usage                        # Token usage tracking
+  /:id/mcp/sse                      # MCP tool server (SSE)
 ```
-
-### Token limits
-
-| Setting | Default | Environment variable |
-|---------|---------|---------------------|
-| Default expiry | 30 days | `DEFAULT_TOKEN_EXPIRY_DAYS` |
-| Maximum tokens per user | 10 | `MAX_TOKENS_PER_USER` |
-
----
 
 ## Projects
 
 ### List projects
 
 ```
-GET /api/v1/projects
+GET /api/projects
 ```
 
 Returns all projects accessible to the authenticated user.
 
-**Response:**
-
-```json
-{
-  "items": [
-    {
-      "id": "proj_abc123",
-      "name": "Mission App ATO",
-      "impact_level": "moderate",
-      "state": "implementation",
-      "target_date": "2026-09-30",
-      "created_at": "2026-01-15T10:00:00Z"
-    }
-  ],
-  "total": 1,
-  "page": 1,
-  "per_page": 20
-}
-```
-
 ### Create a project
 
 ```
-POST /api/v1/projects
+POST /api/projects
 ```
 
 **Request body:**
@@ -128,8 +102,6 @@ POST /api/v1/projects
 }
 ```
 
-**Response:** `201 Created` with the full project object.
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Project name |
@@ -140,56 +112,58 @@ POST /api/v1/projects
 ### Get a project
 
 ```
-GET /api/v1/projects/{id}
+GET /api/projects/{id}
 ```
 
 Returns the full project object including team members, control summary, and evidence summary.
 
----
+## Controls
 
-## Evidence
+### List project controls
+
+```
+GET /api/projects/{id}/data/controls
+```
+
+Returns all controls for the specified project with implementation status and CCI counts.
+
+### Update control status
+
+```
+PATCH /api/projects/{id}/data/controls/{controlId}
+```
+
+**Request body:**
+
+```json
+{
+  "status": "implemented",
+  "implementation_statement": "Account management is handled through Ping Identity..."
+}
+```
+
+## Evidence (BoE)
 
 ### Upload evidence
 
 ```
-POST /api/v1/projects/{id}/evidence
+POST /api/projects/{id}/boe
 ```
 
-Upload a file as evidence for a project. Use `multipart/form-data` encoding.
-
-**Request:**
+Upload a file as evidence. Use `multipart/form-data` encoding.
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/v1/projects/{id}/evidence \
+curl -X POST https://rmf.icbm.dev/api/projects/{id}/boe \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@scan-results.ckl" \
   -F "title=RHEL 8 STIG Results" \
   -F "description=Monthly STIG scan for production servers"
 ```
 
-**Response:** `201 Created`
-
-```json
-{
-  "id": "ev_xyz789",
-  "title": "RHEL 8 STIG Results",
-  "description": "Monthly STIG scan for production servers",
-  "filename": "scan-results.ckl",
-  "size_bytes": 245760,
-  "status": "pending",
-  "uploaded_by": "user@example.com",
-  "created_at": "2026-02-28T14:30:00Z"
-}
-```
-
-<Info>
-Uploading evidence requires the `upload` scope on your API token. Linking evidence to controls requires the `link` scope.
-</Info>
-
 ### Link evidence to controls
 
 ```
-POST /api/v1/projects/{id}/evidence/{eid}/link
+POST /api/projects/{id}/boe/{eid}/link
 ```
 
 **Request body:**
@@ -200,19 +174,95 @@ POST /api/v1/projects/{id}/evidence/{eid}/link
 }
 ```
 
-**Response:** `200 OK` with the updated evidence object including linked controls.
+## POAM
 
----
+### List POAM items
 
-## Activities
+```
+GET /api/projects/{id}/data/poam
+```
+
+### Create POAM item
+
+```
+POST /api/projects/{id}/data/poam
+```
+
+**Request body:**
+
+```json
+{
+  "title": "Missing account review evidence",
+  "control_id": "AC-2",
+  "severity": "high",
+  "responsible_role": "isso",
+  "due_date": "2026-06-30",
+  "description": "No evidence of quarterly account reviews",
+  "remediation_plan": "Implement automated quarterly access review..."
+}
+```
+
+## eMASS export
+
+### Export POAM report
+
+```
+GET /api/projects/{id}/emass/export
+```
+
+Returns an eMASS-formatted Excel file with CUI markings.
+
+### Export CCI test results
+
+```
+GET /api/projects/{id}/emass/cci-results
+```
+
+Returns per-CCI compliance status for assessment reports.
+
+## Pipeline
+
+### Get pipeline status
+
+```
+GET /api/projects/{id}/pipeline
+```
+
+Returns the current RMF phase and phase history.
+
+### Advance pipeline phase
+
+```
+POST /api/projects/{id}/pipeline/advance
+```
+
+Advances the project to the next RMF phase (requires appropriate role).
+
+## Chat and agent
+
+### Send chat message
+
+```
+POST /api/chat
+```
+
+Sends a message to the AI agent and returns an SSE stream of the response.
+
+### List conversations
+
+```
+GET /api/projects/{id}/conversations
+```
+
+Returns conversation history for the project.
+
+## Audit log
 
 ### List project activities
 
 ```
-GET /api/v1/projects/{id}/activities
+GET /api/projects/{id}/audit-log
 ```
-
-Returns the activity log for a specific project.
 
 **Query parameters:**
 
@@ -225,38 +275,9 @@ Returns the activity log for a specific project.
 | `from` | string | — | Start date (ISO 8601) |
 | `to` | string | — | End date (ISO 8601) |
 
-**Response:**
-
-```json
-{
-  "items": [
-    {
-      "id": "act_001",
-      "action": "evidence_uploaded",
-      "user": "isso@example.com",
-      "details": "Uploaded 'RHEL 8 STIG Results'",
-      "timestamp": "2026-02-28T14:30:00Z"
-    }
-  ],
-  "total": 42,
-  "page": 1,
-  "per_page": 20
-}
-```
-
-### List user activities
-
-```
-GET /api/v1/users/activities
-```
-
-Returns all activities performed by the authenticated user across all projects.
-
----
-
 ## Pagination
 
-All list endpoints return paginated results using the following structure:
+All list endpoints return paginated results:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -264,15 +285,6 @@ All list endpoints return paginated results using the following structure:
 | `total` | integer | Total number of items across all pages |
 | `page` | integer | Current page number (1-indexed) |
 | `per_page` | integer | Items per page |
-
-Use `page` and `per_page` query parameters to navigate through results:
-
-```bash
-curl "https://rmf.icbm.dev/api/v1/projects?page=2&per_page=50" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
----
 
 ## Error handling
 
@@ -304,8 +316,6 @@ The API returns standard HTTP status codes and a consistent error response forma
 }
 ```
 
----
-
 ## Rate limiting
 
 The API enforces rate limits per authenticated user:
@@ -315,13 +325,13 @@ The API enforces rate limits per authenticated user:
 | Standard | 100 requests | 1 minute |
 | Upload | 20 requests | 1 minute |
 
-When rate limited, the API returns a `429` response with a `Retry-After` header indicating how many seconds to wait.
+When rate limited, the API returns a `429` response with a `Retry-After` header.
 
 ## Related pages
 
 <CardGroup cols={2}>
   <Card title="Getting started" icon="rocket" href="/rmf/getting-started">
-    Deploy RMF and configure authentication.
+    Deploy ezRMF and configure authentication.
   </Card>
   <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
     Understand the evidence upload and approval workflow.
@@ -329,7 +339,7 @@ When rate limited, the API returns a `429` response with a `Retry-After` header 
   <Card title="Roles and permissions" icon="users" href="/rmf/roles-and-permissions">
     Learn about API token scopes and role-based access.
   </Card>
-  <Card title="MCP integration" icon="robot" href="/rmf/mcp-integration">
-    Connect AI tools to RMF through the MCP server.
+  <Card title="MCP integration" icon="plug" href="/rmf/mcp-integration">
+    Connect AI tools through the MCP server.
   </Card>
 </CardGroup>

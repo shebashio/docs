@@ -1,20 +1,20 @@
 ---
 title: "Controls"
-description: "Work with the NIST 800-53 Rev 5 control catalog, track implementation status, and map controls to CCIs"
+description: "Work with the NIST 800-53 Rev 5 control catalog, track implementation status, manage baselines, and map controls to CCIs"
 sidebarTitle: "Controls"
 ---
 
 ## Overview
 
-Controls are the core building blocks of an ATO package. RMF includes the complete NIST 800-53 Rev 5 catalog and automatically selects the applicable controls when you create a project based on its impact level. You track the implementation status of each control, document how it is satisfied, and link evidence to demonstrate compliance.
+Controls are the core building blocks of an ATO package. ezRMF includes the complete NIST 800-53 Rev 5 catalog with 1,189 controls and automatically selects the applicable controls when you create a project based on its impact level. You track the implementation status of each control, document how it is satisfied, configure Organization-Defined Parameters (ODPs), and link evidence to demonstrate compliance.
 
 ## Control catalog
 
-RMF provides the full NIST 800-53 Rev 5 catalog organized by control family. When you create a project and select an impact level (Low, Moderate, or High), RMF populates the project with the corresponding control baseline.
+ezRMF provides the full NIST 800-53 Rev 5 catalog organized by control family. When you create a project and select an impact level (Low, Moderate, or High), ezRMF populates the project with the corresponding control baseline.
 
 ### Browse controls
 
-Navigate to the **Controls** tab within a project to see all selected controls. You can:
+Navigate to the **Controls** panel within a project to see all selected controls. You can:
 
 - **Filter by family** — Show only controls from a specific family (e.g., AC, AU, CM)
 - **Filter by status** — Show controls by implementation status
@@ -28,6 +28,23 @@ Each control entry displays:
 - **Implementation status** — Current tracking status
 - **Evidence count** — Number of linked evidence artifacts
 - **CCI count** — Number of mapped CCIs
+
+## Baselines and tailoring
+
+ezRMF supports four baseline profiles:
+
+| Baseline | Description |
+|----------|-------------|
+| **Low** | Minimum controls for low-impact systems |
+| **Moderate** | Standard controls for most DoD systems |
+| **High** | Maximum controls for high-value assets |
+| **Custom** | User-defined control set |
+
+You can tailor any baseline by adding or removing individual controls. Navigate to the **Framework** panel to view and modify the active baseline for a project.
+
+### Organization-Defined Parameters (ODPs)
+
+Many NIST 800-53 controls contain parameters that the organization must define (e.g., "lock the account after [organization-defined number] of failed login attempts"). ezRMF tracks ODPs per control, allowing you to set and document these values within the control detail view.
 
 ## Implementation status
 
@@ -49,12 +66,12 @@ To update a control's status:
 4. Click **Save**
 
 <Info>
-Implementation statements should describe the specific mechanisms, configurations, or processes that satisfy the control. For example, an implementation statement for AC-2 might describe the account provisioning process, approval workflows, and automated account reviews.
+Implementation statements should describe the specific mechanisms, configurations, or processes that satisfy the control. You can also ask the [AI agent](/rmf/agent) to draft implementation statements based on your system context.
 </Info>
 
 ### Control enhancements
 
-Many controls have enhancements (e.g., `AC-2(1)`, `AC-2(2)`) that provide additional specificity. RMF tracks enhancements as separate items with their own implementation status and evidence links. Enhancements appear nested under their parent control in the controls list.
+Many controls have enhancements (e.g., `AC-2(1)`, `AC-2(2)`) that provide additional specificity. ezRMF tracks enhancements as separate items with their own implementation status and evidence links. Enhancements appear nested under their parent control in the controls list.
 
 ## CCI mapping
 
@@ -80,25 +97,36 @@ Within a control's detail view, the **CCI Mappings** section lists all associate
 - **STIGMATE results** — If STIGMATE scan results are available, they appear here
 
 <Tip>
-When you import CKL files from [STIGMATE](/stigmate/index), RMF automatically maps the scan results to the corresponding CCIs and controls. This gives you instant visibility into which controls have technical validation evidence.
+When you import CKL files from [STIGMATE](/stigmate/index), ezRMF automatically maps the scan results to the corresponding CCIs and controls. This gives you instant visibility into which controls have technical validation evidence.
 </Tip>
 
 ### CCI coverage report
 
-The CCI coverage report shows how many CCIs across your project have associated STIG results or evidence. Navigate to **Reports** > **CCI Coverage** to see:
+The CCI coverage report shows how many CCIs across your project have associated STIG results or evidence. Navigate to **Assess Combined** to see:
 
 - Total CCIs mapped to selected controls
 - CCIs with STIGMATE scan results
 - CCIs with manually uploaded evidence
 - CCIs with no evidence (gaps)
 
+## AI-assisted control mapping
+
+The AI agent can automatically map controls from imported documents. When you upload an SSP or policy document, the agent:
+
+1. Reads the document and extracts control implementation language
+2. Matches extracted text to NIST 800-53 controls and CCI definitions
+3. Proposes control status updates and implementation statements
+4. Waits for your review and approval before applying changes
+
+See [AI agent](/rmf/agent) for details on agent-assisted workflows.
+
 ## Bulk operations
 
-For projects with hundreds of controls, RMF provides bulk operations to update multiple controls at once.
+For projects with hundreds of controls, ezRMF provides bulk operations to update multiple controls at once.
 
 ### Bulk status update
 
-1. Navigate to the **Controls** tab
+1. Navigate to the **Controls** panel
 2. Select multiple controls using the checkboxes
 3. Click **Bulk Actions** > **Update Status**
 4. Select the new status
@@ -108,7 +136,7 @@ For projects with hundreds of controls, RMF provides bulk operations to update m
 
 You can link a single evidence artifact to multiple controls simultaneously:
 
-1. Navigate to the **Evidence** tab
+1. Navigate to the **BoE** panel
 2. Open the evidence detail view
 3. Click **Link to Controls**
 4. Search and select multiple controls
@@ -118,10 +146,10 @@ This is useful for policy documents that address multiple control families.
 
 ### Import control data
 
-RMF supports importing control implementation data from external sources:
+ezRMF supports importing control implementation data from external sources:
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/v1/projects/{id}/controls/import \
+curl -X POST https://rmf.icbm.dev/api/projects/{id}/data/controls/import \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@controls-export.csv"
@@ -131,7 +159,7 @@ The import expects a CSV with columns for control ID, status, and implementation
 
 ## Control assessment
 
-During the assessment phase, the Security Control Assessor (SCA) reviews each control to determine whether it is implemented correctly and operating as intended.
+During the assessment phase, the Security Control Assessor (SCA) or SCAR reviews each control to determine whether it is implemented correctly and operating as intended.
 
 | Assessment result | Description |
 |-------------------|-------------|
@@ -139,7 +167,7 @@ During the assessment phase, the Security Control Assessor (SCA) reviews each co
 | **Other Than Satisfied** | Control has deficiencies that need remediation |
 | **Not Assessed** | Control has not yet been evaluated |
 
-The SCA records findings and recommendations for each control. Controls marked as **Other Than Satisfied** generate Plan of Action and Milestones (POA&M) items that track remediation.
+The SCA records findings and recommendations for each control. Controls marked as **Other Than Satisfied** generate [POAM](/rmf/poam) items that track remediation.
 
 ## Related pages
 
@@ -147,13 +175,13 @@ The SCA records findings and recommendations for each control. Controls marked a
   <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
     Upload evidence and link it to controls.
   </Card>
+  <Card title="POAM" icon="clipboard-list" href="/rmf/poam">
+    Track remediation items generated from assessments.
+  </Card>
+  <Card title="AI agent" icon="robot" href="/rmf/agent">
+    Use AI to map controls and suggest implementations.
+  </Card>
   <Card title="Concepts" icon="book" href="/rmf/concepts">
     Understand NIST 800-53 control families and CCI mapping.
-  </Card>
-  <Card title="Projects" icon="folder-open" href="/rmf/projects">
-    Manage ATO projects and workflow states.
-  </Card>
-  <Card title="MCP integration" icon="robot" href="/rmf/mcp-integration">
-    Use AI to analyze evidence gaps and suggest implementations.
   </Card>
 </CardGroup>

@@ -1,18 +1,18 @@
 ---
-title: "RMF concepts"
-description: "Core concepts behind the Risk Management Framework, NIST 800-53 controls, CCI mapping, and ATO lifecycle"
+title: "ezRMF concepts"
+description: "Core concepts behind ezRMF — NIST 800-53 controls, CCI mapping, ATO lifecycle, Body of Evidence, and the agentic compliance model"
 sidebarTitle: "Concepts"
 ---
 
 ## Risk Management Framework
 
-The Risk Management Framework (RMF) is a structured process defined by NIST for managing security and privacy risk across federal information systems. RMF provides the methodology, and RMF (the DEDZED platform) implements it as a digital workflow — replacing spreadsheets, shared drives, and manual tracking with a purpose-built system.
+The Risk Management Framework (RMF) is a structured process defined by NIST for managing security and privacy risk across federal information systems. RMF provides the methodology, and ezRMF implements it as a digital workflow — replacing spreadsheets, shared drives, and manual tracking with an AI-powered system.
 
 RMF applies specifically to DoD systems seeking an Authority to Operate (ATO). An ATO is the formal declaration by an Authorizing Official that a system meets the required security posture and is approved for operation.
 
 ## NIST 800-53 Rev 5
 
-NIST Special Publication 800-53 Revision 5 defines the catalog of security and privacy controls that federal systems must implement. RMF uses this catalog as the foundation for all control tracking.
+NIST Special Publication 800-53 Revision 5 defines the catalog of security and privacy controls that federal systems must implement. ezRMF includes the full catalog of 1,189 controls as the foundation for all control tracking.
 
 Controls are organized into 20 families, each addressing a specific area of security:
 
@@ -39,7 +39,11 @@ Controls are organized into 20 families, each addressing a specific area of secu
 | **SR** | Supply Chain Risk Management | SR-1 (Policy), SR-3 (Supply Chain Controls) |
 | **PT** | PII Processing and Transparency | PT-1 (Policy), PT-2 (Authority to Process) |
 
-Each control has a unique identifier (e.g., `AC-2`), a title, and one or more control enhancements (e.g., `AC-2(1)`, `AC-2(2)`). RMF tracks the implementation status of each control and its enhancements individually.
+Each control has a unique identifier (e.g., `AC-2`), a title, and one or more control enhancements (e.g., `AC-2(1)`, `AC-2(2)`). ezRMF tracks the implementation status of each control and its enhancements individually.
+
+### Control baselines
+
+ezRMF supports Low, Moderate, High, and Custom baselines. When you create a project and select an impact level, the appropriate baseline is automatically applied. You can tailor baselines by adding or removing controls and adjusting Organization-Defined Parameters (ODPs).
 
 ## Control Correlation Identifiers (CCI)
 
@@ -57,20 +61,20 @@ For example:
 - Each CCI maps to specific STIG rules that validate account management configurations
 - STIGMATE scans evaluate those STIG rules and produce results
 
-This chain means you can trace a scan finding in [STIGMATE](/stigmate/index) all the way back to the NIST control it satisfies, and attach the scan result as evidence in RMF.
+This chain means you can trace a scan finding in [STIGMATE](/stigmate/index) all the way back to the NIST control it satisfies, and attach the scan result as evidence in ezRMF.
 
 <Info>
-CCI mapping is maintained by DISA (Defense Information Systems Agency). RMF includes the full CCI catalog and keeps it synchronized with NIST 800-53 Rev 5.
+CCI mapping is maintained by DISA (Defense Information Systems Agency). ezRMF includes the full CCI catalog from the DISA STIG Library and keeps it synchronized with NIST 800-53 Rev 5.
 </Info>
 
 ## ATO lifecycle
 
-An ATO project in RMF moves through a series of phases from initiation to continuous monitoring. The Authorizing Official makes the final authorization decision based on the security package assembled during the process.
+An ATO project in ezRMF moves through seven phases from preparation to continuous monitoring. The Authorizing Official makes the final authorization decision based on the security package assembled during the process.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Initiation
-    Initiation --> Categorization
+    [*] --> Prepare
+    Prepare --> Categorization
     Categorization --> ControlSelection
     ControlSelection --> Implementation
     Implementation --> Assessment
@@ -85,39 +89,57 @@ stateDiagram-v2
 
 | Phase | Activities | Key outputs |
 |-------|-----------|-------------|
-| **Initiation** | Define system boundaries, assign team roles, establish project | System description, team roster |
-| **Categorization** | Determine impact levels (confidentiality, integrity, availability) | FIPS 199 categorization |
-| **Control selection** | Select applicable NIST 800-53 controls based on categorization | Control baseline |
-| **Implementation** | Deploy controls and document implementation details | Implementation statements |
-| **Assessment** | Evaluate control effectiveness, review evidence | Security Assessment Report (SAR) |
-| **Authorization** | AO reviews security package and makes risk-based decision | ATO letter or denial |
-| **Continuous monitoring** | Ongoing monitoring, periodic reassessment | POA&M, updated SSP |
+| **Prepare** | Define system boundaries, assign team roles, establish project | System description, team roster |
+| **Categorize** | Determine impact levels (confidentiality, integrity, availability) | FIPS 199 categorization |
+| **Select** | Select applicable NIST 800-53 controls based on categorization | Control baseline with tailoring |
+| **Implement** | Deploy controls and document implementation details | Implementation statements, ODPs |
+| **Assess** | Evaluate control effectiveness, review evidence | Security Assessment Report (SAR) |
+| **Authorize** | AO reviews security package and makes risk-based decision | ATO letter or denial |
+| **Monitor** | Ongoing monitoring, periodic reassessment | POA&M, updated SSP |
 
-## Evidence and artifacts
+## Body of Evidence
 
-RMF manages the evidence artifacts that support your ATO package. Evidence can include:
+ezRMF manages the Body of Evidence (BoE) — the collection of artifacts that support your ATO package. The BoE manager supports in-browser preview of all common document formats without downloading.
+
+Evidence can include:
 
 - **Scan results** — CKL files from STIGMATE, vulnerability scan reports
 - **Configuration documentation** — System security plans, network diagrams
 - **Policy documents** — Organizational policies mapped to controls
 - **Screenshots** — UI evidence of control implementation
 - **Audit logs** — Records demonstrating continuous monitoring
+- **AWS findings** — Security Hub and GuardDuty findings synced automatically
 
 Each piece of evidence is linked to one or more controls and goes through an approval workflow before it is included in the authorization package.
+
+## Agentic compliance
+
+ezRMF uses the Claude Agent SDK to provide an AI agent that runs in isolated Docker sandboxes. The agent has access to your project files, controls, evidence, and the full NIST catalog through MCP tools. It operates within session-scoped, ephemeral containers that never touch your host.
+
+The agent can:
+
+1. **Parse and extract** — Read SSPs, policies, and evidence to extract control implementations and CCI references
+2. **Map controls and CCIs** — Match extracted text to NIST 800-53 controls and DISA CCI definitions
+3. **Classify evidence** — Auto-classify uploaded files by document type, RMF phase, and linked controls
+4. **Identify gaps** — Surface controls without implementation, evidence, or CCI results and generate POAM items
+5. **Generate documents** — Draft SSPs, SARs, SCTMs, policies, SOPs, authorization memos, and architecture diagrams
+6. **Export and package** — Generate eMASS-formatted Excel, CCI test results, and POAM reports
+
+The [Skills system](/rmf/skills) extends the agent with custom workflows defined in Markdown — no code changes required.
 
 ## Related pages
 
 <CardGroup cols={2}>
   <Card title="Controls" icon="list-check" href="/rmf/controls">
-    Work with the NIST 800-53 Rev 5 control catalog in RMF.
+    Work with the NIST 800-53 Rev 5 control catalog in ezRMF.
   </Card>
   <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
     Upload and manage evidence artifacts for your ATO package.
   </Card>
-  <Card title="STIGMATE concepts" icon="clipboard-check" href="/stigmate/concepts">
-    Understand STIGs, CCIs, and how scan results map to controls.
+  <Card title="AI agent" icon="robot" href="/rmf/agent">
+    Learn how the sandboxed agent works.
   </Card>
   <Card title="Roles and permissions" icon="users" href="/rmf/roles-and-permissions">
-    Learn about RMF's five DoD-aligned access roles.
+    Learn about ezRMF's seven DoD-aligned access roles.
   </Card>
 </CardGroup>

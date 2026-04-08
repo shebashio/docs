@@ -1,6 +1,6 @@
 ---
 title: "CKL export"
-description: "Export STIG scan results as CKL checklist files for STIG Viewer, eMASS submission, and RMF evidence packages"
+description: "Export STIG scan results as CKL checklist files for STIG Viewer, eMASS submission, and ezRMF evidence packages"
 sidebarTitle: "CKL export"
 ---
 
@@ -8,7 +8,7 @@ sidebarTitle: "CKL export"
 
 STIGMATE exports scan results as CKL (Checklist) files — the standard format used by DISA's STIG Viewer application. CKL files contain all scan results, finding details, and host information in a structured XML format that auditors and assessment teams use to review compliance.
 
-CKL export is the primary way to get STIGMATE results into your audit workflow. You can import CKL files into STIG Viewer for manual review, attach them to eMASS records, or use them as evidence artifacts in your [RMF project](/rmf/evidence).
+CKL export is the primary way to get STIGMATE results into your audit workflow. You can import CKL files into STIG Viewer for manual review, attach them to eMASS records, or use them as evidence artifacts in your [ezRMF project](/rmf/evidence).
 
 ## What is a CKL file?
 
@@ -74,37 +74,37 @@ STIG Viewer is DISA's desktop application for reviewing and managing STIG checkl
   </Step>
 </Steps>
 
-## CKL and RMF evidence
+## CKL and ezRMF evidence
 
-CKL files serve as compliance evidence in the Risk Management Framework (RMF) authorization process. When you generate a CKL from STIGMATE, you can attach it to your RMF project as evidence for the controls covered by the assessed STIG.
+CKL files serve as compliance evidence in the RMF authorization process. When you generate a CKL from STIGMATE, you can attach it to your ezRMF project as evidence for the controls covered by the assessed STIG.
 
 The workflow:
 
 1. Run a STIGMATE scan against a target host
 2. Export the CKL file
-3. Import the CKL into your [RMF project](/rmf/evidence) as an evidence artifact
-4. The RMF system maps CCI identifiers in the CKL to their corresponding NIST 800-53 controls
+3. Import the CKL into your [ezRMF project](/rmf/evidence) as an evidence artifact
+4. ezRMF maps CCI identifiers in the CKL to their corresponding NIST 800-53 controls
 5. Each control with associated findings shows the compliance status from the scan
 
 <Tip>
-STIGMATE CKL files include CCI mappings for every rule. This means the RMF system can automatically associate findings with the correct security controls without manual mapping.
+STIGMATE CKL files include CCI mappings for every rule. This means ezRMF can automatically associate findings with the correct security controls without manual mapping.
 </Tip>
 
-### Linking STIGMATE to RMF
+### Linking STIGMATE to ezRMF
 
-The connection between STIGMATE and RMF flows through Control Correlation Identifiers (CCIs):
+The connection between STIGMATE and ezRMF flows through Control Correlation Identifiers (CCIs):
 
 ```mermaid
 flowchart LR
     A["STIG Rule"] --> B["CCI Identifier"]
     B --> C["NIST 800-53 Control"]
-    C --> D["RMF Control Implementation"]
+    C --> D["ezRMF Control Implementation"]
     D --> E["Evidence Package"]
     A --> F["CKL Export"]
     F --> E
 ```
 
-Each STIG rule maps to one or more CCIs, which in turn map to NIST 800-53 controls. When you import a CKL into your RMF project, the system uses these mappings to associate scan results with the appropriate controls, building your evidence package automatically.
+Each STIG rule maps to one or more CCIs, which in turn map to NIST 800-53 controls. When you import a CKL into your ezRMF project, the system uses these mappings to associate scan results with the appropriate controls, building your evidence package automatically.
 
 ## Partial scans
 
@@ -120,8 +120,8 @@ A CKL with many NR results may not satisfy assessment requirements. Review Not R
   <Card title="Dashboard" icon="chart-kanban" href="/stigmate/dashboard">
     Kanban board and result management.
   </Card>
-  <Card title="RMF evidence" icon="file-circle-check" href="/rmf/evidence">
-    Attach CKL files as evidence in your RMF project.
+  <Card title="ezRMF evidence" icon="file-circle-check" href="/rmf/evidence">
+    Attach CKL files as evidence in your ezRMF project.
   </Card>
   <Card title="Concepts" icon="book" href="/stigmate/concepts">
     CCI mappings, result codes, and STIG fundamentals.

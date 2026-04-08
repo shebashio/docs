@@ -1,12 +1,12 @@
 ---
 title: "Evidence management"
-description: "Upload, link, and approve evidence artifacts to support your ATO package with a structured approval workflow"
+description: "Upload, classify, preview, and approve evidence artifacts in the Body of Evidence manager"
 sidebarTitle: "Evidence"
 ---
 
 ## Overview
 
-Evidence artifacts are the documentation that proves your security controls are implemented and operating correctly. RMF provides a structured workflow for uploading evidence, linking it to controls, and routing it through a multi-role approval chain. Every piece of evidence in your ATO package must be approved before it is included in the authorization submission.
+The Body of Evidence (BoE) is the collection of documentation that proves your security controls are implemented and operating correctly. ezRMF provides a structured workflow for uploading evidence, classifying it by type, previewing it in-browser, linking it to controls, and routing it through a multi-role approval chain. Every piece of evidence in your ATO package must be approved before it is included in the authorization submission.
 
 ## Upload evidence
 
@@ -14,7 +14,7 @@ You can upload evidence through the UI or the API.
 
 ### Upload through the UI
 
-1. Open your project and navigate to the **Evidence** tab
+1. Open your project and navigate to the **BoE** panel
 2. Click **Upload Evidence**
 3. Select the file from your local machine
 4. Enter a title and description for the evidence
@@ -24,7 +24,7 @@ You can upload evidence through the UI or the API.
 ### Upload through the API
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/v1/projects/{id}/evidence \
+curl -X POST https://rmf.icbm.dev/api/projects/{id}/boe \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@scan-results.ckl" \
@@ -32,27 +32,29 @@ curl -X POST https://rmf.icbm.dev/api/v1/projects/{id}/evidence \
   -F "description=STIGMATE scan results for production RHEL 8 servers"
 ```
 
-The API returns the evidence ID, which you can use to link the evidence to controls:
-
-```bash
-curl -X POST https://rmf.icbm.dev/api/v1/projects/{id}/evidence/{eid}/link \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"control_ids": ["AC-2", "AC-6", "AU-2"]}'
-```
-
 ### Supported file types
 
-RMF accepts any file type as evidence. Common formats include:
+ezRMF accepts any file type as evidence. All common formats render natively in the browser without downloading:
 
 | File type | Extension | Use case |
 |-----------|-----------|----------|
 | STIG checklist | `.ckl` | STIGMATE scan exports |
 | PDF | `.pdf` | Policy documents, signed memos |
-| Screenshot | `.png`, `.jpg` | UI evidence of configurations |
+| Word | `.docx` | SSPs, SOPs, policy documents |
 | Spreadsheet | `.xlsx`, `.csv` | Compliance matrices, inventory lists |
-| Text/Markdown | `.txt`, `.md` | Implementation narratives |
+| Screenshot | `.png`, `.jpg` | UI evidence of configurations |
+| Markdown | `.md` | Implementation narratives |
 | Archive | `.zip` | Bundled evidence packages |
+
+### AI-assisted classification
+
+When you upload evidence, the AI agent can automatically classify the file by:
+
+- **Document type** — Policy, scan result, configuration, screenshot, etc.
+- **RMF phase** — Which phase of the RMF lifecycle the evidence supports
+- **Linked controls** — Which NIST 800-53 controls the evidence is relevant to
+
+The agent proposes classifications for your review. You approve or edit the suggestions before they are applied.
 
 ## Approval workflow
 
@@ -94,25 +96,29 @@ sequenceDiagram
 | **Rejected** | Evidence returned with feedback for revision | ISSO revises and resubmits |
 
 <Info>
-Each approval or rejection is recorded in the activity log with the reviewer's identity, timestamp, and any comments. This creates a complete chain of custody for every evidence artifact.
+Each approval or rejection is recorded in the audit log with the reviewer's identity, timestamp, and any comments. This creates a complete chain of custody for every evidence artifact.
 </Info>
+
+## In-browser preview
+
+ezRMF renders evidence files directly in the browser. You can preview PDFs, Word documents, spreadsheets, images, and Markdown without downloading files to your local machine. This makes evidence review faster and keeps sensitive documents within the platform.
 
 ## STIGMATE CKL import
 
-If you use [STIGMATE](/stigmate/index) for automated STIG scanning, you can import CKL (Checklist) files directly into RMF as evidence. RMF automatically processes the CKL and maps scan results to the appropriate controls through CCI mapping.
+If you use [STIGMATE](/stigmate/index) for automated STIG scanning, you can import CKL (Checklist) files directly into ezRMF as evidence. ezRMF automatically processes the CKL and maps scan results to the appropriate controls through CCI mapping.
 
 ### Import a CKL file
 
-1. Navigate to the **Evidence** tab
+1. Navigate to the **BoE** panel
 2. Click **Import CKL**
 3. Select the `.ckl` file exported from STIGMATE
-4. RMF parses the file and displays a summary of findings
+4. ezRMF parses the file and displays a summary of findings
 5. Review the automatic control mappings
 6. Click **Import**
 
 ### What happens during import
 
-When you import a CKL file, RMF:
+When you import a CKL file, ezRMF:
 
 1. Parses the XCCDF results from the checklist
 2. Maps each STIG rule to its corresponding CCI
@@ -123,14 +129,6 @@ When you import a CKL file, RMF:
 <Tip>
 Import CKL files regularly as you run STIGMATE scans throughout the ATO process. Each import creates a point-in-time snapshot that demonstrates your progress toward compliance.
 </Tip>
-
-### Automatic vs. manual mapping
-
-RMF handles CCI-to-control mapping automatically for all standard mappings. If a CKL contains STIG rules that map to controls not currently in your project baseline, RMF flags them for manual review:
-
-- **Mapped** — CCI maps to a control in your project (linked automatically)
-- **Unmapped** — CCI maps to a control not in your project (requires manual review)
-- **Unknown** — CCI not found in the catalog (may indicate a newer STIG version)
 
 ## Evidence linking
 
@@ -151,7 +149,7 @@ From any control's detail view, the **Evidence** section shows all linked artifa
 
 ## Evidence search and filtering
 
-Use the evidence list filters to find specific artifacts:
+Use the BoE panel filters to find specific artifacts:
 
 - **Status** — Filter by approval state (Pending, ISSM Review, SCA Review, Approved, Rejected)
 - **Control** — Show evidence linked to a specific control
@@ -166,12 +164,12 @@ Use the evidence list filters to find specific artifacts:
     Track control implementation and CCI mappings.
   </Card>
   <Card title="STIGMATE CKL export" icon="file-export" href="/stigmate/ckl-export">
-    Export scan results from STIGMATE for RMF import.
+    Export scan results from STIGMATE for ezRMF import.
+  </Card>
+  <Card title="POAM" icon="clipboard-list" href="/rmf/poam">
+    Track remediation for controls with evidence gaps.
   </Card>
   <Card title="Roles and permissions" icon="users" href="/rmf/roles-and-permissions">
     Understand who can approve evidence at each stage.
-  </Card>
-  <Card title="Projects" icon="folder-open" href="/rmf/projects">
-    Manage ATO projects and workflow states.
   </Card>
 </CardGroup>

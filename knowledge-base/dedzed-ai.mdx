@@ -15,14 +15,14 @@ flowchart LR
         D["Dashboard Agent"]
         S["Shredder Agent"]
         ST["STIGMATE Agents"]
-        R["RMF MCP Server"]
+        R["ezRMF MCP Server"]
     end
 
     K -->|"Code + debug"| KW["Kasm Workspace"]
     D -->|"Deploy + manage"| CMD["Command Dashboard"]
     S -->|"Analyze + remediate"| SH["Shredder"]
     ST -->|"Evaluate STIGs"| STIG["STIGMATE"]
-    R -->|"Compliance assist"| RMF["RMF"]
+    R -->|"Compliance assist"| RMF["ezRMF"]
 ```
 
 ## Kasm workspace agent
@@ -68,11 +68,11 @@ DEDZED AI is built into the [Shredder](/knowledge-base/shredder) Security Platfo
 
 STIGMATE agents can evaluate 395+ STIGs across operating systems, databases, network devices, and cloud platforms. Results are classified as Open, Not a Finding, Not Applicable, or Not Reviewed, and can be exported as CKL checklists.
 
-## RMF MCP integration
+## ezRMF MCP integration
 
-[RMF](/rmf/index) exposes a Model Context Protocol (MCP) server that enables AI-powered compliance assistance. The MCP server provides tools for analyzing evidence gaps, suggesting control implementations, and generating policy documents — all within the context of your RMF project data.
+[ezRMF](/rmf/index) exposes a Model Context Protocol (MCP) server with 30+ compliance tools that enable AI-powered compliance assistance. The MCP server provides tools for analyzing evidence gaps, mapping controls, suggesting implementations, generating documents, and exporting audit packages — all within the context of your ezRMF project data.
 
-You can connect Claude Desktop or other MCP-compatible clients to the RMF MCP server to interact with your compliance data conversationally. See [MCP integration](/rmf/mcp-integration) for setup instructions.
+You can connect Claude Desktop, Claude Code, or other MCP-compatible clients to the ezRMF MCP server to interact with your compliance data conversationally. See [MCP integration](/rmf/mcp-integration) for setup instructions.
 
 ## Related pages
 
@@ -92,7 +92,7 @@ You can connect Claude Desktop or other MCP-compatible clients to the RMF MCP se
   <Card title="STIGMATE" icon="clipboard-check" href="/stigmate/index">
     AI-powered STIG compliance scanning.
   </Card>
-  <Card title="RMF MCP integration" icon="scale-balanced" href="/rmf/mcp-integration">
+  <Card title="ezRMF MCP integration" icon="scale-balanced" href="/rmf/mcp-integration">
     AI-powered compliance assistance via MCP.
   </Card>
 </CardGroup>

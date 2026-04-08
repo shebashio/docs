@@ -1,0 +1,119 @@
+---
+title: "POAM tracking"
+description: "Track Plan of Action and Milestones items with severity levels, milestones, due dates, and eMASS-formatted export"
+sidebarTitle: "POAM"
+---
+
+## Overview
+
+The Plan of Action and Milestones (POAM) tracks security findings that require remediation. When a control is assessed as **Other Than Satisfied** or the AI agent identifies an implementation gap, a POAM item is created to track the remediation effort. ezRMF manages the full POAM lifecycle from finding identification through remediation verification, with export to eMASS-formatted Excel.
+
+## POAM items
+
+Each POAM item tracks a single finding or deficiency. Navigate to the **POAM** panel within a project to view and manage all items.
+
+### POAM fields
+
+| Field | Description |
+|-------|-------------|
+| **Title** | Short description of the finding |
+| **Control** | The NIST 800-53 control with the deficiency |
+| **Severity** | Risk level: Critical, High, Medium, or Low |
+| **Status** | Current remediation state |
+| **Responsible role** | The role responsible for remediation |
+| **Due date** | Target date for remediation completion |
+| **Milestones** | Intermediate steps toward remediation |
+| **Description** | Detailed description of the finding and its impact |
+| **Remediation plan** | Steps to address the deficiency |
+
+### POAM statuses
+
+| Status | Description |
+|--------|-------------|
+| **Open** | Finding identified, remediation not started |
+| **In Progress** | Remediation underway |
+| **Completed** | Remediation implemented, pending verification |
+| **Verified** | Remediation verified by SCA/SCAR |
+| **Closed** | Finding resolved and accepted |
+
+## Create a POAM item
+
+### Manual creation
+
+1. Navigate to the **POAM** panel
+2. Click **New POAM Item**
+3. Fill in the finding details, severity, and responsible role
+4. Add milestones with target dates
+5. Click **Save**
+
+### From control assessment
+
+When the SCA marks a control as **Other Than Satisfied** during assessment, ezRMF automatically creates a POAM item linked to that control with the assessment findings.
+
+### From AI gap analysis
+
+The AI agent can identify implementation gaps and generate POAM items. When the agent surfaces controls without evidence or implementation, it proposes POAM items for your review and approval.
+
+## Milestones
+
+Each POAM item can have multiple milestones that track incremental progress toward remediation.
+
+| Milestone field | Description |
+|----------------|-------------|
+| **Description** | What needs to be done |
+| **Target date** | When this milestone should be completed |
+| **Status** | Not started, in progress, or completed |
+| **Notes** | Additional context or blockers |
+
+## eMASS export
+
+ezRMF exports POAM data in eMASS-formatted Excel spreadsheets, ready for submission to your authorization boundary.
+
+### Export a POAM report
+
+1. Navigate to the **POAM** panel
+2. Click **Export to eMASS**
+3. Select the export options (all items, open items only, or by severity)
+4. Click **Export**
+
+The exported file includes:
+
+- CUI banners and proper markings
+- eMASS-formatted column headers and data layout
+- All POAM items with milestones, severity, and status
+- Metadata headers with project and system information
+
+You can also export through the API:
+
+```bash
+curl https://rmf.icbm.dev/api/projects/{id}/emass/export \
+  -H "Authorization: Bearer $TOKEN" \
+  -o poam-export.xlsx
+```
+
+### CCI test results export
+
+In addition to POAM, ezRMF exports per-CCI compliance status for internal and external assessment reports:
+
+```bash
+curl https://rmf.icbm.dev/api/projects/{id}/emass/cci-results \
+  -H "Authorization: Bearer $TOKEN" \
+  -o cci-test-results.xlsx
+```
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Controls" icon="list-check" href="/rmf/controls">
+    Assessment results that generate POAM items.
+  </Card>
+  <Card title="Evidence management" icon="file-circle-check" href="/rmf/evidence">
+    Upload remediation evidence for POAM items.
+  </Card>
+  <Card title="AI agent" icon="robot" href="/rmf/agent">
+    Use AI to identify gaps and generate POAM items.
+  </Card>
+  <Card title="Projects" icon="folder-open" href="/rmf/projects">
+    Track overall project progress and ATO readiness.
+  </Card>
+</CardGroup>
