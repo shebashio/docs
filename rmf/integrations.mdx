@@ -68,7 +68,7 @@ ezRMF supports importing findings from third-party vulnerability scanners and co
 ### Import scanner findings
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/projects/{id}/integrations/import \
+curl -X POST https://rmf.dedzed.blacklabel.mil/api/projects/{id}/integrations/import \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@scan-results.csv" \

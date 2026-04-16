@@ -8,10 +8,9 @@ sidebarTitle: "Service endpoints"
 
 | Service | URL | Access |
 |---------|-----|--------|
-| DEDZED Command Dashboard | [dedzed.icbm.dev](https://dedzed.icbm.dev) | Browser via AWS Verified Access |
-| Kasm VDI | [kasm.icbm.dev](https://kasm.icbm.dev) | Browser via AWS Verified Access |
-| Kasm WebSocket | `kasm-direct.icbm.dev` | Internal — WAF-protected WebSocket endpoint |
-| Rancher | [rancher.icbm.dev](https://rancher.icbm.dev) | Kasm sessions only |
+| DEDZED Command Dashboard | [dedzed.dedzed.blacklabel.mil](https://dedzed.dedzed.blacklabel.mil) | Browser via AWS Verified Access |
+| Kasm VDI | [kasm.dedzed.blacklabel.mil](https://kasm.dedzed.blacklabel.mil) | Browser via AWS Verified Access |
+| Kasm WebSocket | `kasm-direct.dedzed.blacklabel.mil` | Internal — WAF-protected WebSocket endpoint |
 
 ## Internal services
 
@@ -19,15 +18,15 @@ These services are accessible only from within a Kasm VDI session.
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Shredder | [shredder.icbm.dev](https://shredder.icbm.dev) | Multi-engine security scanning with quality gates |
-| STIGMATE | [stigmate.icbm.dev](https://stigmate.icbm.dev) | AI-powered STIG compliance scanning |
-| ezRMF | [rmf.icbm.dev](https://rmf.icbm.dev) | AI-powered NIST RMF compliance and ATO tracking |
-| ezRMF API | `rmf.icbm.dev/api` | RESTful API for ezRMF data |
-| ezRMF MCP | `rmf.icbm.dev:8001/projects/:id/mcp/sse` | Model Context Protocol server with 30+ compliance tools |
+| Shredder | [shredder.dedzed.blacklabel.mil](https://shredder.dedzed.blacklabel.mil) | Multi-engine security scanning with quality gates |
+| STIGMATE | [stigmate.dedzed.blacklabel.mil](https://stigmate.dedzed.blacklabel.mil) | AI-powered STIG compliance scanning |
+| ezRMF | [rmf.dedzed.blacklabel.mil](https://rmf.dedzed.blacklabel.mil) | AI-powered NIST RMF compliance and ATO tracking |
+| ezRMF API | `rmf.dedzed.blacklabel.mil/api` | RESTful API for ezRMF data |
+| ezRMF MCP | `rmf.dedzed.blacklabel.mil:8001/projects/:id/mcp/sse` | Model Context Protocol server with 30+ compliance tools |
 
 ## Authentication
 
-All services authenticate through **Ping Identity**. Initial sign-in requires a valid CAC at `kasm.icbm.dev`. Within Kasm sessions, use your DEDZED username and password.
+All services authenticate through **Ping Identity**. Initial sign-in requires a valid CAC at `kasm.dedzed.blacklabel.mil`. Within Kasm sessions, use your DEDZED username and password.
 
 ## Network access
 

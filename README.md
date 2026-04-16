@@ -2,7 +2,7 @@
 
 Documentation site for the DEDZED platform, built with [Mintlify](https://mintlify.com).
 
-**Live site:** [docs.icbm.dev](https://docs.icbm.dev)
+**Live site:** [docs.dedzed.blacklabel.mil](https://docs.dedzed.blacklabel.mil)
 
 ## Development
 

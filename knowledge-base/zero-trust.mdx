@@ -10,8 +10,8 @@ DEDZED enforces a zero trust access model — no user or device is implicitly tr
 
 Kasm VDI uses a **dual-ingress architecture** to work around AWS Verified Access (AVA) not supporting WebSockets:
 
-- **kasm.icbm.dev** — AVA-protected endpoint for authentication and API calls
-- **kasm-direct.icbm.dev** — WAF-protected endpoint for WebSocket desktop connections (bypasses AVA)
+- **kasm.dedzed.blacklabel.mil** — AVA-protected endpoint for authentication and API calls
+- **kasm-direct.dedzed.blacklabel.mil** — WAF-protected endpoint for WebSocket desktop connections (bypasses AVA)
 
 The `kasm-direct` endpoint is a **controlled public endpoint**. While it is internet-facing by design (users must reach it after authenticating through AVA), it is protected by multiple layers of defense that reduce the attack surface to a narrow aperture: only well-formed WebSocket upgrade requests, with the correct Origin, to a valid UUID path, carrying a valid session token, from a non-rate-limited IP can reach the backend.
 
@@ -26,8 +26,8 @@ flowchart TB
     end
 
     subgraph Cloudflare["Cloudflare DNS"]
-        DNS1["kasm.icbm.dev"]
-        DNS2["kasm-direct.icbm.dev"]
+        DNS1["kasm.dedzed.blacklabel.mil"]
+        DNS2["kasm-direct.dedzed.blacklabel.mil"]
     end
 
     subgraph AWS["AWS GovCloud"]
@@ -89,18 +89,18 @@ sequenceDiagram
     participant AG as Kasm Agent
 
     Note over B,AG: 1. Authentication & Session Creation
-    B->>CF: kasm.icbm.dev
+    B->>CF: kasm.dedzed.blacklabel.mil
     CF->>AVA: HTTPS
     AVA->>B: PingFederate Login
     B->>AVA: Authenticate
     AVA->>WA: Authorized Request
-    WA->>B: Set cookies (domain=.icbm.dev)
+    WA->>B: Set cookies (domain=.dedzed.blacklabel.mil)
     B->>AVA: Create Session
     AVA->>WA: POST /api/request_kasm
     WA->>B: Session ID + WebSocket URL
 
     Note over B,AG: 2. WebSocket Connection (WAF-Protected, Bypasses AVA)
-    B->>CF: kasm-direct.icbm.dev/desktop/{uuid}/...
+    B->>CF: kasm-direct.dedzed.blacklabel.mil/desktop/{uuid}/...
     CF->>WAF: HTTPS request
     Note over WAF: Validate Origin, enforce path pattern, rate limit, block bad inputs
     WAF->>ALB: Request passes WAF rules
@@ -119,8 +119,8 @@ sequenceDiagram
 
 | Domain | Type | Purpose | Path restrictions |
 |--------|------|---------|-------------------|
-| `kasm.icbm.dev` | AWS Verified Access | Authentication, API, session management | None (full access) |
-| `kasm-direct.icbm.dev` | WAF + ALB | WebSocket desktop connections | `/desktop/{uuid}` (enforced at WAF + ALB) |
+| `kasm.dedzed.blacklabel.mil` | AWS Verified Access | Authentication, API, session management | None (full access) |
+| `kasm-direct.dedzed.blacklabel.mil` | WAF + ALB | WebSocket desktop connections | `/desktop/{uuid}` (enforced at WAF + ALB) |
 
 ---
 
@@ -130,7 +130,7 @@ The `kasm-direct` path is protected by 8 layers. Layers 1–6 reduce noise and b
 
 | Layer | Component | Enforcement | Spoofable via CLI? |
 |-------|-----------|-------------|-------------------|
-| 1 | **AWS WAF** | Origin header = `https://kasm.icbm.dev` | Yes (curl/scripts can set any Origin) |
+| 1 | **AWS WAF** | Origin header = `https://kasm.dedzed.blacklabel.mil` | Yes (curl/scripts can set any Origin) |
 | 2 | **AWS WAF** | Path must match `/desktop/{uuid}` regex | Yes (but UUID is unpredictable) |
 | 3 | **AWS WAF** | Rate limit 100 req/5min per source IP | Slows brute-force enumeration |
 | 4 | **AWS WAF** | Managed rules (OWASP, bad inputs, bots) | Blocks known exploit patterns |
@@ -147,7 +147,7 @@ The WAF Web ACL uses the following rule chain:
 
 | Priority | Rule | Type | Action | Purpose |
 |----------|------|------|--------|---------|
-| 1 | Origin header validation | Custom | Block | Only allow `Origin: https://kasm.icbm.dev` |
+| 1 | Origin header validation | Custom | Block | Only allow `Origin: https://kasm.dedzed.blacklabel.mil` |
 | 2 | Path pattern enforcement | Custom | Block | Strict `/desktop/{uuid}` regex enforcement |
 | 3 | Rate limit per IP | Rate-based | Block | 100 req/5min per source IP |
 | 4 | `AWSManagedRulesCommonRuleSet` | Managed | Block | OWASP top-10 protections |
@@ -157,7 +157,7 @@ The WAF Web ACL uses the following rule chain:
 
 ### Origin header validation
 
-Blocks any request where the `Origin` header is not exactly `https://kasm.icbm.dev`. In browsers, Origin is a forbidden header (cannot be spoofed by JavaScript), which eliminates all browser-based attacks including direct navigation, cross-origin scripts, and CSRF.
+Blocks any request where the `Origin` header is not exactly `https://kasm.dedzed.blacklabel.mil`. In browsers, Origin is a forbidden header (cannot be spoofed by JavaScript), which eliminates all browser-based attacks including direct navigation, cross-origin scripts, and CSRF.
 
 ### Path pattern enforcement
 
@@ -173,7 +173,7 @@ Blocks source IPs exceeding 100 requests in a 5-minute window. Prevents brute-fo
 
 | Setting | Value |
 |---------|-------|
-| Certificate | `*.icbm.dev` (ACM) |
+| Certificate | `*.dedzed.blacklabel.mil` (ACM) |
 | Idle timeout | 3600s (for WebSocket) |
 | Sticky sessions | Enabled |
 
@@ -201,14 +201,14 @@ Blocks source IPs exceeding 100 requests in a 5-minute window. Prevents brute-fo
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| Kasm Auth Domain | `.icbm.dev` | Share cookies across subdomains |
+| Kasm Auth Domain | `.dedzed.blacklabel.mil` | Share cookies across subdomains |
 
 ### Zone settings
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| Upstream Auth Address | `kasm.icbm.dev` | Agent validates sessions via webapp |
-| Proxy Hostname | `kasm-direct.icbm.dev` | WebSocket connection hostname |
+| Upstream Auth Address | `kasm.dedzed.blacklabel.mil` | Agent validates sessions via webapp |
+| Proxy Hostname | `kasm-direct.dedzed.blacklabel.mil` | WebSocket connection hostname |
 | Proxy Port | `443` | HTTPS port |
 | Proxy Path | `desktop` | URL path prefix |
 
@@ -218,8 +218,8 @@ Blocks source IPs exceeding 100 requests in a 5-minute window. Prevents brute-fo
 
 | Record | Type | Target |
 |--------|------|--------|
-| `kasm.icbm.dev` | — | AWS Verified Access endpoint |
-| `kasm-direct.icbm.dev` | CNAME | Application Load Balancer |
+| `kasm.dedzed.blacklabel.mil` | — | AWS Verified Access endpoint |
+| `kasm-direct.dedzed.blacklabel.mil` | CNAME | Application Load Balancer |
 
 ---
 
@@ -227,21 +227,21 @@ Blocks source IPs exceeding 100 requests in a 5-minute window. Prevents brute-fo
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| 403 from WAF | Origin header missing or incorrect | Verify browser sends `Origin: https://kasm.icbm.dev` |
+| 403 from WAF | Origin header missing or incorrect | Verify browser sends `Origin: https://kasm.dedzed.blacklabel.mil` |
 | 403 from WAF | Path doesn't match UUID regex | Verify URL is `/desktop/{uuid}/...` format |
 | 403 from WAF | Rate limited | Check WAF CloudWatch metrics, adjust threshold if needed |
 | 403 "Access denied" (plain text) | ALB blocking non-desktop path | Check if path matches `/desktop/*` |
 | 403 Forbidden (nginx HTML) | Kasm agent auth failing | Check `session_token` cookie is being sent |
-| No cookies sent to kasm-direct | Wrong cookie domain | Set Kasm Auth Domain to `.icbm.dev` |
-| Agent internal_auth fails | Wrong Upstream Auth Address | Set to `kasm.icbm.dev` (not kasm-direct) |
+| No cookies sent to kasm-direct | Wrong cookie domain | Set Kasm Auth Domain to `.dedzed.blacklabel.mil` |
+| Agent internal_auth fails | Wrong Upstream Auth Address | Set to `kasm.dedzed.blacklabel.mil` (not kasm-direct) |
 | WebSocket timeout | ALB idle timeout too low | Increase to 3600s |
 
 ### Verify cookie sharing
 
 Check browser dev tools (Network tab, Request Headers):
 
-- Request to `kasm-direct.icbm.dev` should include `Cookie: session_token=...`
-- Request to `kasm-direct.icbm.dev` should include `Origin: https://kasm.icbm.dev`
+- Request to `kasm-direct.dedzed.blacklabel.mil` should include `Cookie: session_token=...`
+- Request to `kasm-direct.dedzed.blacklabel.mil` should include `Origin: https://kasm.dedzed.blacklabel.mil`
 - If either is missing, check the Kasm Auth Domain setting
 
 ---

@@ -86,7 +86,7 @@ The exported file includes:
 You can also export through the API:
 
 ```bash
-curl https://rmf.icbm.dev/api/projects/{id}/emass/export \
+curl https://rmf.dedzed.blacklabel.mil/api/projects/{id}/emass/export \
   -H "Authorization: Bearer $TOKEN" \
   -o poam-export.xlsx
 ```
@@ -96,7 +96,7 @@ curl https://rmf.icbm.dev/api/projects/{id}/emass/export \
 In addition to POAM, ezRMF exports per-CCI compliance status for internal and external assessment reports:
 
 ```bash
-curl https://rmf.icbm.dev/api/projects/{id}/emass/cci-results \
+curl https://rmf.dedzed.blacklabel.mil/api/projects/{id}/emass/cci-results \
   -H "Authorization: Bearer $TOKEN" \
   -o cci-test-results.xlsx
 ```

@@ -6,19 +6,15 @@ sidebarTitle: "Connect to cluster"
 
 ## Overview
 
-After you deploy an ephemeral cluster through the DEDZED Command Dashboard, you connect to it from within your Kasm workspace session. The connection flow involves creating a Rancher API token, running an automatic sync script, and configuring `kubectl` access.
+After you deploy an ephemeral cluster through the DEDZED Command Dashboard, you connect to it from within your Kasm workspace session. The connection flow involves creating an API token, running an automatic sync script, and configuring `kubectl` access.
 
 ```mermaid
 sequenceDiagram
     participant U as You (Kasm session)
-    participant R as Rancher
     participant S as setup.sh
     participant K as Kubernetes cluster
-    U->>R: Create API token
-    R-->>U: Bearer token
     U->>S: Run setup script
-    S->>R: Fetch cluster configs
-    R-->>S: kubeconfig files
+    S->>S: Fetch cluster configs
     S-->>U: Configs saved to ~/Documents
     U->>K: kubectl / k9s
     K-->>U: Ping Identity auth prompt
@@ -43,38 +39,7 @@ For Azure Kubernetes (AKS) clusters, ensure you have an unexpired CAC plugged in
 
 ---
 
-## Step 1: Create your Rancher API token
-
-You need a Rancher API token to authorize the cluster sync script.
-
-<Steps>
-  <Step title="Open Kasm and sign in">
-    Navigate to [https://kasm.icbm.dev](https://kasm.icbm.dev), click the **Ping Identity** option, and sign in. For AKS clusters, select the **Use a certificate or smart card** option.
-  </Step>
-  <Step title="Start a workspace session">
-    Launch a Kasm workspace using **SHE BASH Ubuntu** or **Windows 11**.
-  </Step>
-  <Step title="Open Rancher">
-    Within the Kasm workspace session, open a browser and navigate to the [DEDZED Rancher Service](https://rancher.icbm.dev/). Sign in with your DEDZED username and password.
-  </Step>
-  <Step title="Navigate to API keys">
-    Click your profile picture in the top-right corner and select **Account & API Keys**.
-  </Step>
-  <Step title="Create the token">
-    Click **Create API Key**. Set your token expiration date and set the **Scope** to "No Scope". Click **Create**.
-  </Step>
-  <Step title="Copy the token">
-    On the confirmation page, copy and save your **Bearer Token**. Click **Done**. Keep this page accessible — you will need the token in the next step.
-  </Step>
-</Steps>
-
-<Warning>
-Store your Bearer Token securely. If you lose it, you will need to create a new one. Tokens are not retrievable after you leave the confirmation page.
-</Warning>
-
----
-
-## Step 2: Sync your clusters
+## Step 1: Sync your clusters
 
 Your clusters are automatically synced when your Kasm workspace starts. A `setup.sh` script on your desktop handles the connection setup.
 
@@ -88,17 +53,14 @@ If you have not requested a cluster yet, see the [Deploying an ephemeral cluster
   <Step title="Start or restart a workspace session">
     If you already have a session open, you can run the `setup.sh` script manually from the desktop. Otherwise, start a new session — the script runs automatically on first launch.
   </Step>
-  <Step title="Enter your Rancher API token">
-    When prompted, paste your Bearer Token into the terminal and press **Enter**.
-  </Step>
   <Step title="Wait for the sync to complete">
-    The script contacts Rancher, discovers your available clusters, and downloads the kubeconfig files. If no clusters are available, you will see: `No clusters found or failed to fetch clusters`.
+    The script discovers your available clusters and downloads the kubeconfig files. If no clusters are available, you will see: `No clusters found or failed to fetch clusters`.
   </Step>
 </Steps>
 
 ---
 
-## Step 3: Set your KUBECONFIG
+## Step 2: Set your KUBECONFIG
 
 After the sync completes, kubeconfig files are saved to the `~/Documents` directory. Set the `KUBECONFIG` environment variable to point to the cluster you want to access:
 
@@ -118,7 +80,7 @@ To make this persistent across terminal sessions, add the `export` line to your 
 
 ---
 
-## Step 4: Access your cluster
+## Step 3: Access your cluster
 
 With the `KUBECONFIG` set, use `kubectl` or `k9s` to interact with your cluster.
 
@@ -139,7 +101,7 @@ On the first command, you will be prompted to authenticate via **Ping Identity**
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `No clusters found or failed to fetch clusters` | Cluster not yet provisioned or still deploying | Check cluster status in the DEDZED Command Dashboard and wait for it to show as online |
-| Authentication prompt loops | Expired Ping session or stale token | Create a new Rancher API token and re-run `setup.sh` |
+| Authentication prompt loops | Expired Ping session or stale token | Re-run `setup.sh` |
 | `connection refused` errors | Cluster endpoints not reachable | Verify the cluster is online and your Kasm session has network connectivity |
 | Kubeconfig file not found in `~/Documents` | Sync script did not complete | Re-run `setup.sh` from the desktop and check for errors |
 

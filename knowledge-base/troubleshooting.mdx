@@ -14,7 +14,7 @@ For service-specific details, follow the links to the relevant documentation pag
 
 ### CAC sign-in fails
 
-**Symptom**: You cannot sign in with your Common Access Card at `kasm.icbm.dev`.
+**Symptom**: You cannot sign in with your Common Access Card at `kasm.dedzed.blacklabel.mil`.
 
 **Information gathering**: Confirm your CAC is inserted and recognized by your machine. Try a different browser or clear cached certificates.
 
@@ -33,9 +33,9 @@ See [Self-registration: CAC issues](/getting-started/self-registration#troublesh
 
 **Symptom**: You are repeatedly redirected to the Ping Identity login page when connecting to a cluster.
 
-**Information gathering**: Check whether your Rancher API token has expired. Open the DEDZED Command Dashboard and verify your session is active.
+**Information gathering**: Open the DEDZED Command Dashboard and verify your session is active.
 
-**Resolution**: Create a new Rancher API token and re-run the `setup.sh` script. See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troubleshooting).
+**Resolution**: Re-run the `setup.sh` script. See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troubleshooting).
 
 ### 403 Forbidden errors
 
@@ -43,7 +43,7 @@ See [Self-registration: CAC issues](/getting-started/self-registration#troublesh
 
 | Source | How to identify | Cause | Fix |
 |--------|----------------|-------|-----|
-| WAF | Raw `403` with no HTML | `Origin` header missing or incorrect | Verify browser sends `Origin: https://kasm.icbm.dev` |
+| WAF | Raw `403` with no HTML | `Origin` header missing or incorrect | Verify browser sends `Origin: https://kasm.dedzed.blacklabel.mil` |
 | WAF | Raw `403` with no HTML | Path doesn't match UUID regex | Verify URL is `/desktop/{uuid}/...` format |
 | WAF | Raw `403` with no HTML | Rate limited | Check WAF CloudWatch metrics, adjust threshold if needed |
 | ALB | Plain text "Access denied" | Non-desktop path blocked | Check if path matches `/desktop/*` |
@@ -60,7 +60,7 @@ See [Zero trust: Troubleshooting](/knowledge-base/zero-trust#troubleshooting) fo
 
 **Symptom**: `No clusters found or failed to fetch clusters` when running the connection script.
 
-**Information gathering**: Open the [DEDZED Command Dashboard](https://dedzed.icbm.dev) and check your cluster status.
+**Information gathering**: Open the [DEDZED Command Dashboard](https://dedzed.dedzed.blacklabel.mil) and check your cluster status.
 
 **Resolution**: Your cluster may still be provisioning. Wait for it to show as **online** in the dashboard. Provisioning typically takes 10-15 minutes. See [Provisioning time](/getting-started/provision-time).
 
@@ -88,11 +88,11 @@ See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troub
 
 ### No cookies sent to kasm-direct
 
-**Symptom**: Requests to `kasm-direct.icbm.dev` do not include the `session_token` cookie.
+**Symptom**: Requests to `kasm-direct.dedzed.blacklabel.mil` do not include the `session_token` cookie.
 
-**Information gathering**: Open browser dev tools (Network tab) and inspect request headers to `kasm-direct.icbm.dev`.
+**Information gathering**: Open browser dev tools (Network tab) and inspect request headers to `kasm-direct.dedzed.blacklabel.mil`.
 
-**Resolution**: Set the Kasm Auth Domain to `.icbm.dev`. This allows cookie sharing across subdomains.
+**Resolution**: Set the Kasm Auth Domain to `.dedzed.blacklabel.mil`. This allows cookie sharing across subdomains.
 
 ### Agent internal_auth fails
 
@@ -100,7 +100,7 @@ See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troub
 
 **Information gathering**: Check the Upstream Auth Address configuration.
 
-**Resolution**: Set Upstream Auth Address to `kasm.icbm.dev` (not `kasm-direct`).
+**Resolution**: Set Upstream Auth Address to `kasm.dedzed.blacklabel.mil` (not `kasm-direct`).
 
 ### WebSocket timeout
 
@@ -114,8 +114,8 @@ See [Connect to cluster: Troubleshooting](/kasm-workspaces/connect-cluster#troub
 
 To confirm cookies are being sent correctly, check browser dev tools (Network tab, Request Headers):
 
-- Request to `kasm-direct.icbm.dev` should include `Cookie: session_token=...`
-- Request to `kasm-direct.icbm.dev` should include `Origin: https://kasm.icbm.dev`
+- Request to `kasm-direct.dedzed.blacklabel.mil` should include `Cookie: session_token=...`
+- Request to `kasm-direct.dedzed.blacklabel.mil` should include `Origin: https://kasm.dedzed.blacklabel.mil`
 - If either is missing, check the Kasm Auth Domain setting
 
 See [Zero trust access](/knowledge-base/zero-trust) for the full architecture and troubleshooting table.
@@ -128,7 +128,7 @@ See [Zero trust access](/knowledge-base/zero-trust) for the full architecture an
 
 **Symptom**: API returns `409 Conflict` when starting a scan.
 
-**Resolution**: A scan is already in progress for that host. Wait for it to complete or check the [STIGMATE dashboard](https://stigmate.icbm.dev) for progress.
+**Resolution**: A scan is already in progress for that host. Wait for it to complete or check the [STIGMATE dashboard](https://stigmate.dedzed.blacklabel.mil) for progress.
 
 ### Host not found in asset inventory
 

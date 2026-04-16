@@ -29,7 +29,7 @@ ezRMF automatically populates the project with the NIST 800-53 control baseline 
 You can also create a project programmatically through the API:
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/projects \
+curl -X POST https://rmf.dedzed.blacklabel.mil/api/projects \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -142,7 +142,7 @@ Navigate to the **Audit Log** panel within a project to see the chronological ac
 You can also retrieve activities through the API:
 
 ```bash
-curl https://rmf.icbm.dev/api/projects/{id}/audit-log \
+curl https://rmf.dedzed.blacklabel.mil/api/projects/{id}/audit-log \
   -H "Authorization: Bearer $TOKEN"
 ```
 

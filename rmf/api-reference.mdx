@@ -6,7 +6,7 @@ sidebarTitle: "API reference"
 
 ## Overview
 
-ezRMF provides a REST API for programmatic access to all platform features. The API uses JSON request and response bodies, standard HTTP methods, and Bearer token authentication. The base URL for all endpoints is `https://rmf.icbm.dev/api`.
+ezRMF provides a REST API for programmatic access to all platform features. The API uses JSON request and response bodies, standard HTTP methods, and Bearer token authentication. The base URL for all endpoints is `https://rmf.dedzed.blacklabel.mil/api`.
 
 ## Authentication
 
@@ -31,7 +31,7 @@ API tokens provide programmatic access with granular permissions. Each token is 
 #### Create a token
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/tokens \
+curl -X POST https://rmf.dedzed.blacklabel.mil/api/tokens \
   -H "Authorization: Bearer $SESSION_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -153,7 +153,7 @@ POST /api/projects/{id}/boe
 Upload a file as evidence. Use `multipart/form-data` encoding.
 
 ```bash
-curl -X POST https://rmf.icbm.dev/api/projects/{id}/boe \
+curl -X POST https://rmf.dedzed.blacklabel.mil/api/projects/{id}/boe \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@scan-results.ckl" \
   -F "title=RHEL 8 STIG Results" \
